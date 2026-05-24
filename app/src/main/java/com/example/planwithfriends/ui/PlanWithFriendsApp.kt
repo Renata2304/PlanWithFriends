@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -14,24 +15,24 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
-// Importurile ecranelor tale (pe care le vom crea în folderul ui/screens)
+// Importăm ecranele tale
 import com.example.planwithfriends.ui.screens.CalendarScreen
 import com.example.planwithfriends.ui.screens.GroupsScreen
 import com.example.planwithfriends.ui.screens.SettingsScreen
+import com.example.planwithfriends.ui.screens.SettingsViewModel
 
 @Composable
-fun PlanWithFriendsApp() {
+fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
     val navController = rememberNavController()
 
     Scaffold(
         bottomBar = {
-            NavigationBar(containerColor = Color(0xFFAED581)) { // Culoarea verde din design
+            NavigationBar(containerColor = MaterialTheme.colorScheme.primary) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -74,16 +75,19 @@ fun PlanWithFriendsApp() {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background
         ) {
-            // Aici se schimbă ecranele în funcție de butonul apăsat
             NavHost(
                 navController = navController,
                 startDestination = "calendar"
             ) {
                 composable("calendar") { CalendarScreen() }
                 composable("groups") { GroupsScreen() }
-                composable("settings") { SettingsScreen() }
+                composable("settings") {
+                    // PASĂM MAI DEPARTE parametrul către SettingsScreen
+                    SettingsScreen(settingsViewModel = settingsViewModel)
+                }
             }
         }
     }

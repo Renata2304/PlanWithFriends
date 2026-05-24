@@ -2,10 +2,14 @@ package com.example.planwithfriends.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Light Mode
+val AppGreenPrimary = Color(0xFFAED581) // Verdele pentru BottomBar
+val AppPinkSecondary = Color(0xFFF48FB1) // Rozul pentru butoane (FAB)
+val AppPinkLight = Color(0xFFFCE4EC) // Roz deschis pentru cardurile de evenimente
+val AppBackgroundLight = Color(0xFFF0F4C3) // Verdele deschis de fundal
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Dark Mode
+val AppGreenDark = Color(0xFF81C784)
+val AppPinkDark = Color(0xFFF06292)
+val AppBackgroundDark = Color(0xFF121212)
+val AppSurfaceDark = Color(0xFF1E1E1E) // Culoarea pentru carduri în Dark Mode

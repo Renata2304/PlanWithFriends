@@ -17,22 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
-    // Stări locale pentru a bifa cerința "customize colors, language"
-    var isDarkTheme by remember { mutableStateOf(false) }
-
+fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expanded by remember { mutableStateOf(false) }
     val languages = listOf("English", "Română", "Français")
     var selectedLanguage by remember { mutableStateOf(languages[0]) }
 
-    // Folosim fundalul în funcție de temă (simulare schimbare culori)
-    val backgroundColor = if (isDarkTheme) Color(0xFF303030) else Color(0xFFF0F4C3)
-    val textColor = if (isDarkTheme) Color.White else Color.Black
+    val textColor = MaterialTheme.colorScheme.onBackground
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.background)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -43,7 +38,8 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape),
-            tint = if (isDarkTheme) Color.LightGray else Color.Gray
+            // REZOLVARE 1: Citim starea direct din ViewModel
+            tint = if (settingsViewModel.isDarkTheme) Color.LightGray else Color.Gray
         )
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -57,6 +53,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 value = selectedLanguage,
                 onValueChange = {},
                 readOnly = true,
+                // REZOLVARE 2: Folosim variabila textColor care se adaptează automat
                 label = { Text("Language", color = textColor) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
@@ -64,7 +61,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     unfocusedTextColor = textColor
                 ),
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -95,14 +92,16 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 text = "Dark Theme",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = textColor
+                color = textColor // REZOLVARE 2: Folosim variabila textColor
             )
             Switch(
-                checked = isDarkTheme,
-                onCheckedChange = { isDarkTheme = it },
+                checked = settingsViewModel.isDarkTheme,
+                onCheckedChange = { isDark ->
+                    settingsViewModel.toggleTheme(isDark)
+                },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color(0xFFF48FB1), // Rozul din temă
-                    checkedTrackColor = Color(0xFFFCE4EC)
+                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
+                    checkedTrackColor = MaterialTheme.colorScheme.tertiary
                 )
             )
         }

@@ -29,11 +29,11 @@ fun GroupsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFFF0F4C3), // Culoarea de fundal verde deschis
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Navigare către ecranul de creare grup nou */ },
-                containerColor = Color(0xFFF48FB1), // Culoarea roz
+                containerColor = MaterialTheme.colorScheme.secondary,
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Crează Grup", tint = Color.Black)

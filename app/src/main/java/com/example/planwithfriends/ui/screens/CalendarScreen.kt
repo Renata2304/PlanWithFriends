@@ -1,5 +1,6 @@
 package com.example.planwithfriends.ui.screens
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,17 +34,17 @@ fun CalendarScreen(
 ) {
     // Luăm data curentă a sistemului
     val currentDate = remember { LocalDate.now() }
-    val currentMonth = remember { YearMonth.from(currentDate) }
+    var currentMonth by remember { mutableStateOf(YearMonth.from(currentDate)) }
 
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFFF0F4C3), // Culoarea de fundal verde deschis din wireframe
+        containerColor = colorResource(id = R.color.background_light),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Navigare către AddEventScreen */ },
-                containerColor = Color(0xFFF48FB1), // Culoarea roz a butonului
+                containerColor = MaterialTheme.colorScheme.secondary,
                 shape = CircleShape
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Adaugă Eveniment", tint = Color.Black)
@@ -56,7 +58,9 @@ fun CalendarScreen(
                 .padding(16.dp)
         ) {
             // 1. Componenta Calendarului
-            CalendarWidget(currentDate, currentMonth)
+            CalendarWidget(currentDate, currentMonth,
+                onPreviousMonth = { currentMonth = currentMonth.minusMonths(1) },
+                onNextMonth = { currentMonth = currentMonth.plusMonths(1) })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -81,20 +85,25 @@ fun CalendarScreen(
 }
 
 @Composable
-fun CalendarWidget(currentDate: LocalDate, currentMonth: YearMonth) {
+fun CalendarWidget(
+    currentDate: LocalDate,
+    currentMonth: YearMonth,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header-ul calendarului (Ex: May 2026)
+            // Header-ul calendarului
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* Luna anterioară */ }) {
+                IconButton(onClick = onPreviousMonth) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Înapoi")
                 }
 
@@ -105,7 +114,7 @@ fun CalendarWidget(currentDate: LocalDate, currentMonth: YearMonth) {
                     fontWeight = FontWeight.Bold
                 )
 
-                IconButton(onClick = { /* Luna următoare */ }) {
+                IconButton(onClick = onNextMonth) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Înainte")
                 }
             }
@@ -128,17 +137,24 @@ fun CalendarWidget(currentDate: LocalDate, currentMonth: YearMonth) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Logica corectată pentru alinierea zilelor
             val daysInMonth = currentMonth.lengthOfMonth()
+            val firstDayOfMonth = currentMonth.atDay(1).dayOfWeek.value
+            val firstDayOffset = firstDayOfMonth - 1 // Ajustăm pentru index de la 0
+
             var currentDay = 1
 
-            for (week in 0..4) {
+            for (week in 0..5) { // Un calendar poate avea până la 6 rânduri
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    for (dayOfWeek in 1..7) {
-                        if (currentDay <= daysInMonth) {
-                            val isToday = currentDay == currentDate.dayOfMonth
+                    for (dayOfWeek in 0..6) {
+                        if ((week == 0 && dayOfWeek < firstDayOffset) || currentDay > daysInMonth) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        } else {
+                            val isToday = currentDay == currentDate.dayOfMonth && currentMonth == YearMonth.from(currentDate)
+
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -154,8 +170,6 @@ fun CalendarWidget(currentDate: LocalDate, currentMonth: YearMonth) {
                                 )
                             }
                             currentDay++
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
