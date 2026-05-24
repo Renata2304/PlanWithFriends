@@ -12,59 +12,48 @@ import com.example.planwithfriends.data.EventsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-// Starea ecranului de Calendar
 data class CalendarUiState(
     val selectedDate: LocalDate = LocalDate.now(),
-    val eventsForSelectedDate: List<Event> = emptyList(),
-    val isLoading: Boolean = false
+    val eventsForSelectedDate: List<Event> = emptyList()
 )
 
-class CalendarViewModel(
-    private val eventsRepository: EventsRepository
-) : ViewModel() {
+class CalendarViewModel(private val eventsRepository: EventsRepository) : ViewModel() {
 
-    // Starea internă (modificabilă doar de ViewModel)
     private val _uiState = MutableStateFlow(CalendarUiState())
-    // Starea expusă către UI (Read-only)
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
     init {
-        // La inițializare, încărcăm evenimentele pentru ziua de azi
-        loadEventsForDate(_uiState.value.selectedDate)
+        fetchEventsForDate(LocalDate.now())
+    }
+    fun selectDate(date: LocalDate) {
+        _uiState.update { it.copy(selectedDate = date) }
+        fetchEventsForDate(date)
     }
 
-    private fun loadEventsForDate(date: LocalDate) {
+    private fun fetchEventsForDate(date: LocalDate) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-
-            // Formatăm data ca String pentru a o cere din Repository
-            val dateString = date.toString()
-
-            eventsRepository.getEventsForDate(dateString).collect { events ->
-                _uiState.value = _uiState.value.copy(
-                    eventsForSelectedDate = events,
-                    isLoading = false
-                )
+            eventsRepository.getEventsForDate(date.toString()).collect { events ->
+                _uiState.update { it.copy(eventsForSelectedDate = events) }
             }
         }
     }
 
-    // Funcție pe care o va apela UI-ul când utilizatorul dă click pe altă zi
-    fun selectDate(newDate: LocalDate) {
-        _uiState.value = _uiState.value.copy(selectedDate = newDate)
-        loadEventsForDate(newDate)
+    fun addEvent(title: String, time: String, date: LocalDate) {
+        viewModelScope.launch {
+            eventsRepository.insertEvent(title, time, date.toString())
+        }
     }
 
-    // Factory-ul necesar pentru a injecta Repository-ul din AppContainer (Ca în MarsPhotos)
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as PlanWithFriendsApplication)
                 val eventsRepository = application.container.eventsRepository
-                CalendarViewModel(eventsRepository = eventsRepository)
+                CalendarViewModel(eventsRepository)
             }
         }
     }

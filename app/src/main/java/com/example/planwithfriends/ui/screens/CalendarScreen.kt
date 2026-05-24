@@ -108,6 +108,11 @@ fun CalendarScreen(
                     selectedDate = uiState.selectedDate,
                     onDismiss = { showAddDialog = false },
                     onSave = { title, time ->
+                        viewModel.addEvent(
+                            title = title,
+                            time = time,
+                            date = uiState.selectedDate
+                        )
                         showAddDialog = false
                     }
                 )
