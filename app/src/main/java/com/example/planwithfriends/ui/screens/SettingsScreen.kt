@@ -92,7 +92,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                 text = "Dark Theme",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = textColor // REZOLVARE 2: Folosim variabila textColor
+                color = textColor
             )
             Switch(
                 checked = settingsViewModel.isDarkTheme,

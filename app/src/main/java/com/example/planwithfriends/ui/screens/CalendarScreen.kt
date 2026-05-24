@@ -36,12 +36,14 @@ fun CalendarScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    var showAddDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Navigare către AddEventScreen */ },
+                onClick = { showAddDialog = true },
                 containerColor = MaterialTheme.colorScheme.secondary,
                 shape = CircleShape
             ) {
@@ -100,6 +102,15 @@ fun CalendarScreen(
                         EventCard(title = event.title, time = event.time)
                     }
                 }
+            }
+            if (showAddDialog) {
+                AddEventDialog(
+                    selectedDate = uiState.selectedDate,
+                    onDismiss = { showAddDialog = false },
+                    onSave = { title, time ->
+                        showAddDialog = false
+                    }
+                )
             }
         }
     }
@@ -197,7 +208,12 @@ fun CalendarWidget(
                             ) {
                                 Text(
                                     text = currentDay.toString(),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(4.dp),
+                                    color = when {
+                                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                                        isToday -> MaterialTheme.colorScheme.onTertiary
+                                        else -> MaterialTheme.colorScheme.onSurface
+                                    },
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -246,4 +262,137 @@ fun EventCard(title: String, time: String) {
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEventDialog(
+    selectedDate: LocalDate,
+    onDismiss: () -> Unit,
+    onSave: (title: String, time: String) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf("") }
+
+    // Variabilă de stare pentru a arăta sau ascunde ceasul
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Adaugă Eveniment", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Dată: $selectedDate",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+
+                // Câmp pentru Titlu
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Titlu eveniment") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Câmp pentru Oră (Apasabil)
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = time,
+                        onValueChange = { }, // Nu facem nimic aici pentru că e readOnly
+                        label = { Text("Ora (apasă pentru a selecta)") },
+                        singleLine = true,
+                        readOnly = true, // Ascunde tastatura
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Transparent)
+                            .clickable { showTimePicker = true }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (title.isNotBlank()) {
+                        onSave(title, time)
+                        onDismiss()
+                    }
+                }
+            ) {
+                Text("Salvează")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color.Gray)
+            }
+        }
+    )
+
+    if (showTimePicker) {
+        DialWithDialogExample(
+            onConfirm = { timePickerState ->
+                val h = timePickerState.hour.toString().padStart(2, '0')
+                val m = timePickerState.minute.toString().padStart(2, '0')
+                time = "$h:$m"
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DialWithDialogExample(
+    onConfirm: (TimePickerState) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val currentTime = java.util.Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(java.util.Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(java.util.Calendar.MINUTE),
+        is24Hour = true,
+    )
+
+    TimePickerDialog(
+        onDismiss = { onDismiss() },
+        onConfirm = { onConfirm(timePickerState) }
+    ) {
+        TimePicker(
+            state = timePickerState,
+        )
+    }
+}
+
+@Composable
+fun TimePickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        dismissButton = {
+            TextButton(onClick = { onDismiss() }) {
+                Text("Dismiss")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm() }) {
+                Text("OK")
+            }
+        },
+        text = { content() }
+    )
 }
