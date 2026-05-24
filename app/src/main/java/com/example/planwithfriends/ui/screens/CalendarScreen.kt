@@ -1,7 +1,7 @@
 package com.example.planwithfriends.ui.screens
 
-import android.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,7 +31,6 @@ fun CalendarScreen(
     modifier: Modifier = Modifier,
     viewModel: CalendarViewModel = viewModel(factory = CalendarViewModel.Factory)
 ) {
-    // Luăm data curentă a sistemului
     val currentDate = remember { LocalDate.now() }
     var currentMonth by remember { mutableStateOf(YearMonth.from(currentDate)) }
 
@@ -40,7 +38,7 @@ fun CalendarScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = colorResource(id = R.color.background_light),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Navigare către AddEventScreen */ },
@@ -58,26 +56,49 @@ fun CalendarScreen(
                 .padding(16.dp)
         ) {
             // 1. Componenta Calendarului
-            CalendarWidget(currentDate, currentMonth,
+            CalendarWidget(
+                currentDate = currentDate,
+                currentMonth = currentMonth,
+                selectedDate = uiState.selectedDate, // Trimitem data selectată curent
                 onPreviousMonth = { currentMonth = currentMonth.minusMonths(1) },
-                onNextMonth = { currentMonth = currentMonth.plusMonths(1) })
+                onNextMonth = { currentMonth = currentMonth.plusMonths(1) },
+                onDateSelected = { date -> viewModel.selectDate(date) } // Când dăm click, anunțăm ViewModel-ul!
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // 2. Titlu secțiune evenimente
             Text(
-                text = "Evenimentele de azi",
+                text = "Evenimentele din ${uiState.selectedDate}", // Arătăm dinamic data selectată
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // 3. Lista de evenimente din ziua curentă
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(uiState.eventsForSelectedDate) { event ->
-                    EventCard(title = event.title, time = event.time)
+            // 3. Lista de evenimente
+            if (uiState.eventsForSelectedDate.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Nu există evenimente pentru această zi.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.eventsForSelectedDate) { event ->
+                        EventCard(title = event.title, time = event.time)
+                    }
                 }
             }
         }
@@ -88,13 +109,16 @@ fun CalendarScreen(
 fun CalendarWidget(
     currentDate: LocalDate,
     currentMonth: YearMonth,
+    selectedDate: LocalDate, // Am adăugat parametrul pentru a ști ce zi e selectată
     onPreviousMonth: () -> Unit,
-    onNextMonth: () -> Unit
+    onNextMonth: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit // Funcția care se execută la click
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        // Folosim culoarea "Surface" din tema noastră pentru calendar
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Header-ul calendarului
@@ -137,14 +161,13 @@ fun CalendarWidget(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Logica corectată pentru alinierea zilelor
             val daysInMonth = currentMonth.lengthOfMonth()
             val firstDayOfMonth = currentMonth.atDay(1).dayOfWeek.value
-            val firstDayOffset = firstDayOfMonth - 1 // Ajustăm pentru index de la 0
+            val firstDayOffset = firstDayOfMonth - 1
 
             var currentDay = 1
 
-            for (week in 0..5) { // Un calendar poate avea până la 6 rânduri
+            for (week in 0..5) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -153,20 +176,30 @@ fun CalendarWidget(
                         if ((week == 0 && dayOfWeek < firstDayOffset) || currentDay > daysInMonth) {
                             Spacer(modifier = Modifier.weight(1f))
                         } else {
-                            val isToday = currentDay == currentDate.dayOfMonth && currentMonth == YearMonth.from(currentDate)
+                            val dayDate = currentMonth.atDay(currentDay)
+                            val isSelected = dayDate == selectedDate
+                            val isToday = dayDate == currentDate
 
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .aspectRatio(1f)
                                     .clip(CircleShape)
-                                    .background(if (isToday) Color.DarkGray else Color.Transparent),
+                                    .background(
+                                        when {
+                                            isSelected -> MaterialTheme.colorScheme.primary
+                                            isToday -> MaterialTheme.colorScheme.tertiary
+                                            else -> Color.Transparent
+                                        }
+                                    )
+                                    .clickable { onDateSelected(dayDate) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = currentDay.toString(),
-                                    color = if (isToday) Color.White else Color.Black,
-                                    style = MaterialTheme.typography.bodyMedium
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isToday || isSelected) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                             currentDay++
@@ -183,7 +216,7 @@ fun EventCard(title: String, time: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFCE4EC))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Row(
             modifier = Modifier
@@ -197,19 +230,19 @@ fun EventCard(title: String, time: String) {
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = Color.DarkGray
+                    tint = MaterialTheme.colorScheme.onTertiary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onTertiary
                 )
             }
             Text(
                 text = time,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onTertiary
             )
         }
     }
