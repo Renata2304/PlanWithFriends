@@ -18,9 +18,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
-    var expanded by remember { mutableStateOf(false) }
+    var expandedLanguage by remember { mutableStateOf(false) }
+    var expandedTheme by remember { mutableStateOf(false) }
+
     val languages = listOf("English", "Română", "Français")
     var selectedLanguage by remember { mutableStateOf(languages[0]) }
+
+    val themeOptions = listOf("Auto (Anotimpuri)", "Primăvară", "Vară", "Toamnă", "Iarnă")
+    val selectedThemeOption = settingsViewModel.currentSeasonTheme
 
     val textColor = MaterialTheme.colorScheme.onBackground
 
@@ -38,7 +43,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape),
-            // REZOLVARE 1: Citim starea direct din ViewModel
             tint = if (settingsViewModel.isDarkTheme) Color.LightGray else Color.Gray
         )
 
@@ -46,16 +50,15 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         // 2. Setare Limbă (Language Dropdown)
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+            expanded = expandedLanguage,
+            onExpandedChange = { expandedLanguage = !expandedLanguage }
         ) {
             OutlinedTextField(
                 value = selectedLanguage,
                 onValueChange = {},
                 readOnly = true,
-                // REZOLVARE 2: Folosim variabila textColor care se adaptează automat
                 label = { Text("Language", color = textColor) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                     focusedTextColor = textColor,
                     unfocusedTextColor = textColor
@@ -65,15 +68,15 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
+                expanded = expandedLanguage,
+                onDismissRequest = { expandedLanguage = false }
             ) {
                 languages.forEach { selectionOption ->
                     DropdownMenuItem(
                         text = { Text(selectionOption) },
                         onClick = {
                             selectedLanguage = selectionOption
-                            expanded = false
+                            expandedLanguage = false
                         }
                     )
                 }
@@ -82,7 +85,45 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Setare Temă (Customize colors)
+        // 3. Setare Temă Cromatică / Anotimp (Noul Widget)
+        ExposedDropdownMenuBox(
+            expanded = expandedTheme,
+            onExpandedChange = { expandedTheme = !expandedTheme }
+        ) {
+            OutlinedTextField(
+                value = selectedThemeOption,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Temă Cromatică", color = textColor) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                    focusedTextColor = textColor,
+                    unfocusedTextColor = textColor
+                ),
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = expandedTheme,
+                onDismissRequest = { expandedTheme = false }
+            ) {
+                themeOptions.forEach { themeOption ->
+                    DropdownMenuItem(
+                        text = { Text(themeOption) },
+                        onClick = {
+                            settingsViewModel.setSeasonTheme(themeOption)
+                            expandedTheme = false
+                            // TODO: Aici vei apela funcția din ViewModel pentru a schimba efectiv culorile!
+                            // ex: settingsViewModel.setSeasonTheme(themeOption)
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,7 +149,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 4. Log Out
+        // 5. Log Out
         TextButton(onClick = { /* Acțiune delogare */ }) {
             Text(
                 text = "Log Out",

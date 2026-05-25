@@ -17,8 +17,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            val settingsViewModel: SettingsViewModel = viewModel()
-            PlanWithFriendsTheme(darkTheme = settingsViewModel.isDarkTheme) {
+            val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+            PlanWithFriendsTheme(darkTheme = settingsViewModel.isDarkTheme,
+                    season = settingsViewModel.currentSeasonTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {

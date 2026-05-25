@@ -10,11 +10,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,7 +24,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.planwithfriends.ui.screens.GroupDetailsScreen
-
 import com.example.planwithfriends.ui.screens.CalendarScreen
 import com.example.planwithfriends.ui.screens.GroupsScreen
 import com.example.planwithfriends.ui.screens.SettingsScreen
@@ -38,6 +39,7 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
+                // 1. Buton Calendar
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
                     selected = currentRoute == "calendar",
@@ -47,8 +49,15 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.background,
+                        unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                        indicatorColor = Color.Transparent
+                    )
                 )
+
+                // 2. Buton Grupuri
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Face, contentDescription = "Groups") },
                     selected = currentRoute == "groups",
@@ -58,8 +67,15 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.background,
+                        unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                        indicatorColor = Color.Transparent
+                    )
                 )
+
+                // 3. Buton Setări
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     selected = currentRoute == "settings",
@@ -69,7 +85,12 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.background,
+                        unselectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                        indicatorColor = Color.Transparent
+                    )
                 )
             }
         }
