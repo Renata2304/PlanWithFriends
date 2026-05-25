@@ -64,7 +64,7 @@ fun CalendarScreen(
                 selectedDate = uiState.selectedDate, // Trimitem data selectată curent
                 onPreviousMonth = { currentMonth = currentMonth.minusMonths(1) },
                 onNextMonth = { currentMonth = currentMonth.plusMonths(1) },
-                onDateSelected = { date -> viewModel.selectDate(date) } // Când dăm click, anunțăm ViewModel-ul!
+                onDateSelected = { date -> viewModel.selectDate(date)}
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -133,7 +133,6 @@ fun CalendarWidget(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        // Folosim culoarea "Surface" din tema noastră pentru calendar
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -279,7 +278,6 @@ fun AddEventDialog(
     var title by remember { mutableStateOf("") }
     var time by remember { mutableStateOf("") }
 
-    // Variabilă de stare pentru a arăta sau ascunde ceasul
     var showTimePicker by remember { mutableStateOf(false) }
 
     AlertDialog(

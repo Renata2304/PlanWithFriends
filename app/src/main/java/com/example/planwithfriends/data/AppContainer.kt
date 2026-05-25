@@ -18,6 +18,6 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     }
 
     override val groupsRepository: GroupsRepository by lazy {
-        OfflineFirstGroupsRepository()
+        OfflineFirstGroupsRepository(database.groupDao())
     }
 }

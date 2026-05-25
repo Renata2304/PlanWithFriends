@@ -19,8 +19,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.planwithfriends.ui.screens.GroupDetailsScreen
 
-// Importăm ecranele tale
 import com.example.planwithfriends.ui.screens.CalendarScreen
 import com.example.planwithfriends.ui.screens.GroupsScreen
 import com.example.planwithfriends.ui.screens.SettingsScreen
@@ -83,9 +85,36 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                 startDestination = "calendar"
             ) {
                 composable("calendar") { CalendarScreen() }
-                composable("groups") { GroupsScreen() }
+
+                composable("groups") {
+                    GroupsScreen(
+                        onGroupClick = { groupId, groupName ->
+                            navController.navigate("group_details/$groupId/$groupName")
+                        }
+                    )
+                }
+
                 composable("settings") {
                     SettingsScreen(settingsViewModel = settingsViewModel)
+                }
+
+                composable(
+                    route = "group_details/{groupId}/{groupName}",
+                    arguments = listOf(
+                        navArgument("groupId") { type = NavType.StringType },
+                        navArgument("groupName") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val groupId = backStackEntry.arguments?.getString("groupId") ?: ""
+                    val groupName = backStackEntry.arguments?.getString("groupName") ?: "Detalii Grup"
+
+                    GroupDetailsScreen(
+                        groupId = groupId,
+                        groupName = groupName,
+                        onNavigateBack = {
+                            navController.popBackStack()
+                        }
+                    )
                 }
             }
         }

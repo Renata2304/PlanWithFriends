@@ -12,45 +12,51 @@ import com.example.planwithfriends.data.GroupsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// 1. Clasa de stare
 data class GroupsUiState(
-    val groupsList: List<Group> = emptyList(),
-    val isLoading: Boolean = false
+    val groupsList: List<Group> = emptyList()
 )
 
-// 2. ViewModel-ul
-class GroupsViewModel(
-    private val groupsRepository: GroupsRepository
-) : ViewModel() {
+class GroupsViewModel(private val groupsRepository: GroupsRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupsUiState())
     val uiState: StateFlow<GroupsUiState> = _uiState.asStateFlow()
 
+    private val currentUserId = "my_user_id_123"
+
     init {
-        loadGroups()
+        fetchGroups()
     }
 
-    private fun loadGroups() {
+    private fun fetchGroups() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            // .collect
             groupsRepository.getAllGroups().collect { groups ->
-                _uiState.value = _uiState.value.copy(
-                    groupsList = groups,
-                    isLoading = false
-                )
+                _uiState.update { it.copy(groupsList = groups) }
             }
         }
     }
 
-    // 3. FACTORY-ul (Foarte important! Aici îți dădea eroare dacă lipsea)
+    fun createGroup(name: String) {
+        viewModelScope.launch {
+            groupsRepository.createGroup(name, currentUserId)
+        }
+    }
+
+    fun joinGroup(groupId: String) {
+        viewModelScope.launch {
+            groupsRepository.joinGroup(groupId, currentUserId)
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as PlanWithFriendsApplication)
                 val groupsRepository = application.container.groupsRepository
-                GroupsViewModel(groupsRepository = groupsRepository)
+                GroupsViewModel(groupsRepository)
             }
         }
     }

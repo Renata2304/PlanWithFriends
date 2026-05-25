@@ -1,6 +1,7 @@
 package com.example.planwithfriends.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,9 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,20 +22,47 @@ import com.example.planwithfriends.data.Group
 @Composable
 fun GroupsScreen(
     modifier: Modifier = Modifier,
-    viewModel: GroupsViewModel = viewModel(factory = GroupsViewModel.Factory)
+    viewModel: GroupsViewModel = viewModel(factory = GroupsViewModel.Factory),
+    onGroupClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    var showMenu by remember { mutableStateOf(false) }
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var showJoinDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* Navigare către ecranul de creare grup nou */ },
-                containerColor = MaterialTheme.colorScheme.secondary,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Crează Grup", tint = Color.Black)
+            Box {
+                FloatingActionButton(
+                    onClick = { showMenu = true },
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Opțiuni Grup", tint = Color.Black)
+                }
+
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Crează un grup nou") },
+                        onClick = {
+                            showMenu = false
+                            showCreateDialog = true
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Alătură-te unui grup") },
+                        onClick = {
+                            showMenu = false
+                            showJoinDialog = true
+                        }
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -48,22 +74,45 @@ fun GroupsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(uiState.groupsList) { group ->
-                GroupListItem(group = group)
+                GroupListItem(
+                    group = group,
+                    onClick = { onGroupClick(group.id, group.name) }
+                )
             }
+        }
+
+        if (showCreateDialog) {
+            CreateGroupDialog(
+                onDismiss = { showCreateDialog = false },
+                onCreate = { groupName ->
+                    viewModel.createGroup(groupName)
+                    showCreateDialog = false
+                }
+            )
+        }
+
+        if (showJoinDialog) {
+            JoinGroupDialog(
+                onDismiss = { showJoinDialog = false },
+                onJoin = { groupId ->
+                    viewModel.joinGroup(groupId)
+                    showJoinDialog = false
+                }
+            )
         }
     }
 }
 
 @Composable
-fun GroupListItem(group: Group) {
+fun GroupListItem(group: Group, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Numele Grupului
         Text(
             text = group.name,
             style = MaterialTheme.typography.bodyLarge,
@@ -71,11 +120,9 @@ fun GroupListItem(group: Group) {
             color = Color.Black
         )
 
-        // Secțiunea cu Avatare (Placeholder) și numărul de membri suplimentari
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Simulăm avatarele suprapuse din schiță
             Row(horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
-                repeat(minOf(group.memberCount, 3)) { // Arătăm maxim 3 avatare
+                repeat(minOf(group.memberCount, 3)) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = "Avatar",
@@ -89,14 +136,85 @@ fun GroupListItem(group: Group) {
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Indicator pentru restul membrilor (ex: +1, +2)
             if (group.memberCount > 3) {
                 Text(
                     text = "+${group.memberCount - 3}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Blue // Culoarea specifică din schiță
+                    color = Color.Blue
                 )
             }
         }
     }
+}
+
+@Composable
+fun CreateGroupDialog(
+    onDismiss: () -> Unit,
+    onCreate: (name: String) -> Unit
+) {
+    var groupName by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Crează un grup nou", fontWeight = FontWeight.Bold) },
+        text = {
+            OutlinedTextField(
+                value = groupName,
+                onValueChange = { groupName = it },
+                label = { Text("Numele grupului") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (groupName.isNotBlank()) onCreate(groupName)
+                }
+            ) { Text("Crează") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Anulează", color = Color.Gray) }
+        }
+    )
+}
+
+@Composable
+fun JoinGroupDialog(
+    onDismiss: () -> Unit,
+    onJoin: (groupId: String) -> Unit
+) {
+    var groupId by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Alătură-te unui grup", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                Text(
+                    text = "Introdu ID-ul unic al grupului primit de la prietenii tăi.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                OutlinedTextField(
+                    value = groupId,
+                    onValueChange = { groupId = it },
+                    label = { Text("ID Grup") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (groupId.isNotBlank()) onJoin(groupId)
+                }
+            ) { Text("Înscrie-te") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Anulează", color = Color.Gray) }
+        }
+    )
 }
