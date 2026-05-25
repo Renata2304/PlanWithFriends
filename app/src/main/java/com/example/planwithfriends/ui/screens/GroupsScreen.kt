@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planwithfriends.data.Group
+import com.example.planwithfriends.R
 
 @Composable
 fun GroupsScreen(
@@ -42,7 +44,11 @@ fun GroupsScreen(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     shape = CircleShape
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Opțiuni Grup", tint = Color.Black)
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_group_cd),
+                        tint = Color.Black
+                    )
                 }
 
                 DropdownMenu(
@@ -50,14 +56,14 @@ fun GroupsScreen(
                     onDismissRequest = { showMenu = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Crează un grup nou") },
+                        text = { Text(stringResource(R.string.create_new_group)) },
                         onClick = {
                             showMenu = false
                             showCreateDialog = true
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Alătură-te unui grup") },
+                        text = { Text(stringResource(R.string.join_group)) },
                         onClick = {
                             showMenu = false
                             showJoinDialog = true
@@ -132,7 +138,7 @@ fun GroupListItem(group: Group, onClick: () -> Unit) {
                     repeat(minOf(group.memberCount, 3)) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "Avatar",
+                            contentDescription = stringResource(R.string.avatar_cd),
                             modifier = Modifier
                                 .size(32.dp)
                                 .background(Color.White, CircleShape),
@@ -164,12 +170,12 @@ fun CreateGroupDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Crează un grup nou", fontWeight = FontWeight.Bold) },
+        title = { Text(text = stringResource(R.string.create_new_group), fontWeight = FontWeight.Bold) },
         text = {
             OutlinedTextField(
                 value = groupName,
                 onValueChange = { groupName = it },
-                label = { Text("Numele grupului") },
+                label = { Text(stringResource(R.string.group_name_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -179,10 +185,10 @@ fun CreateGroupDialog(
                 onClick = {
                     if (groupName.isNotBlank()) onCreate(groupName)
                 }
-            ) { Text("Crează") }
+            ) { Text(stringResource(R.string.action_create)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Anulează", color = Color.Gray) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = Color.Gray) }
         }
     )
 }
@@ -196,11 +202,11 @@ fun JoinGroupDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Alătură-te unui grup", fontWeight = FontWeight.Bold) },
+        title = { Text(text = stringResource(R.string.join_group), fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Text(
-                    text = "Introdu ID-ul unic al grupului primit de la prietenii tăi.",
+                    text = stringResource(R.string.join_group_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -208,7 +214,7 @@ fun JoinGroupDialog(
                 OutlinedTextField(
                     value = groupId,
                     onValueChange = { groupId = it },
-                    label = { Text("ID Grup") },
+                    label = { Text(stringResource(R.string.group_id_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -219,10 +225,10 @@ fun JoinGroupDialog(
                 onClick = {
                     if (groupId.isNotBlank()) onJoin(groupId)
                 }
-            ) { Text("Înscrie-te") }
+            ) { Text(stringResource(R.string.action_join)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Anulează", color = Color.Gray) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = Color.Gray) }
         }
     )
 }

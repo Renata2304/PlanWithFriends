@@ -17,10 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.planwithfriends.R
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -47,7 +50,11 @@ fun CalendarScreen(
                 containerColor = MaterialTheme.colorScheme.secondary,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Adaugă Eveniment", tint = Color.Black)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = stringResource(R.string.add_event_cd),
+                    tint = Color.Black
+                )
             }
         }
     ) { paddingValues ->
@@ -61,7 +68,7 @@ fun CalendarScreen(
             CalendarWidget(
                 currentDate = currentDate,
                 currentMonth = currentMonth,
-                selectedDate = uiState.selectedDate, // Trimitem data selectată curent
+                selectedDate = uiState.selectedDate,
                 onPreviousMonth = { currentMonth = currentMonth.minusMonths(1) },
                 onNextMonth = { currentMonth = currentMonth.plusMonths(1) },
                 onDateSelected = { date -> viewModel.selectDate(date)}
@@ -71,7 +78,7 @@ fun CalendarScreen(
 
             // 2. Titlu secțiune evenimente
             Text(
-                text = "Evenimentele din ${uiState.selectedDate}", // Arătăm dinamic data selectată
+                text = stringResource(R.string.events_for_date, uiState.selectedDate),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -86,7 +93,7 @@ fun CalendarScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Nu există evenimente pentru această zi.",
+                        text = stringResource(R.string.no_events_today),
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.Gray
                     )
@@ -125,10 +132,10 @@ fun CalendarScreen(
 fun CalendarWidget(
     currentDate: LocalDate,
     currentMonth: YearMonth,
-    selectedDate: LocalDate, // Am adăugat parametrul pentru a ști ce zi e selectată
+    selectedDate: LocalDate,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    onDateSelected: (LocalDate) -> Unit // Funcția care se execută la click
+    onDateSelected: (LocalDate) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -136,14 +143,16 @@ fun CalendarWidget(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Header-ul calendarului
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onPreviousMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Înapoi")
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.previous_month_cd)
+                    )
                 }
 
                 val monthName = currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
@@ -154,14 +163,17 @@ fun CalendarWidget(
                 )
 
                 IconButton(onClick = onNextMonth) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Înainte")
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = stringResource(R.string.next_month_cd)
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Zilele săptămânii
-            val daysOfWeek = listOf("L", "M", "M", "J", "V", "S", "D")
+            val daysOfWeek = stringArrayResource(R.array.days_of_week_short)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 daysOfWeek.forEach { day ->
                     Text(
@@ -184,7 +196,9 @@ fun CalendarWidget(
 
             for (week in 0..5) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     for (dayOfWeek in 0..6) {
@@ -283,12 +297,12 @@ fun AddEventDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Adaugă Eveniment", fontWeight = FontWeight.Bold)
+            Text(text = stringResource(R.string.add_event), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Dată: $selectedDate",
+                    text = stringResource(R.string.date_format_label, selectedDate),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
@@ -298,7 +312,7 @@ fun AddEventDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Titlu eveniment") },
+                    label = { Text(stringResource(R.string.event_title_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -308,7 +322,7 @@ fun AddEventDialog(
                     OutlinedTextField(
                         value = time,
                         onValueChange = { },
-                        label = { Text("Ora (apasă pentru a selecta)") },
+                        label = { Text(stringResource(R.string.event_time_hint)) },
                         singleLine = true,
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth()
@@ -331,12 +345,12 @@ fun AddEventDialog(
                     }
                 }
             ) {
-                Text("Salvează")
+                Text(stringResource(R.string.action_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text(stringResource(R.string.action_cancel), color = Color.Gray)
             }
         }
     )
@@ -388,12 +402,12 @@ fun TimePickerDialog(
         onDismissRequest = onDismiss,
         dismissButton = {
             TextButton(onClick = { onDismiss() }) {
-                Text("Dismiss")
+                Text(stringResource(R.string.action_dismiss))
             }
         },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
-                Text("OK")
+                Text(stringResource(R.string.action_ok))
             }
         },
         text = { content() }

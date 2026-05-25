@@ -13,21 +13,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.planwithfriends.R
 
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expandedLanguage by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
 
-    val languages = listOf("English", "Română", "Français")
-    var selectedLanguage by remember { mutableStateOf(languages[0]) }
-
-    val themeOptions = listOf("Auto (Anotimpuri)", "Primăvară", "Vară", "Toamnă", "Iarnă")
-    val selectedThemeOption = settingsViewModel.currentSeasonTheme
+    val languages = stringArrayResource(R.array.languages_list)
+    val selectedLanguage = settingsViewModel.currentLanguage
 
     val textColor = MaterialTheme.colorScheme.onBackground
+
+    val themeMap = mapOf(
+        "auto" to stringResource(id = R.string.theme_auto),
+        "spring" to stringResource(id = R.string.theme_spring),
+        "summer" to stringResource(id = R.string.theme_summer),
+        "autumn" to stringResource(id = R.string.theme_autumn),
+        "winter" to stringResource(id = R.string.theme_winter)
+    )
+    val themeKeys = themeMap.keys.toList()
+
+    val selectedThemeDisplayText = themeMap[settingsViewModel.currentSeasonTheme] ?: themeMap["auto"]!!
 
     Column(
         modifier = modifier
@@ -39,7 +50,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         // 1. Poza de Profil
         Icon(
             imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Profile Picture",
+            contentDescription = stringResource(R.string.profile_picture_cd),
             modifier = Modifier
                 .size(120.dp)
                 .clip(CircleShape),
@@ -57,7 +68,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                 value = selectedLanguage,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Language", color = textColor) },
+                label = { Text(stringResource(R.string.language_label), color = textColor) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguage) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                     focusedTextColor = textColor,
@@ -75,7 +86,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                     DropdownMenuItem(
                         text = { Text(selectionOption) },
                         onClick = {
-                            selectedLanguage = selectionOption
+                            settingsViewModel.setLanguage(selectionOption)
                             expandedLanguage = false
                         }
                     )
@@ -85,16 +96,16 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Setare Temă Cromatică / Anotimp (Noul Widget)
+        // 3. Setare Temă Cromatică / Anotimp
         ExposedDropdownMenuBox(
             expanded = expandedTheme,
             onExpandedChange = { expandedTheme = !expandedTheme }
         ) {
             OutlinedTextField(
-                value = selectedThemeOption,
+                value = selectedThemeDisplayText, // Afișăm traducerea!
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Temă Cromatică", color = textColor) },
+                label = { Text(stringResource(id = R.string.color_theme), color = textColor) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedTheme) },
                 colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
                     focusedTextColor = textColor,
@@ -108,14 +119,12 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                 expanded = expandedTheme,
                 onDismissRequest = { expandedTheme = false }
             ) {
-                themeOptions.forEach { themeOption ->
+                themeKeys.forEach { key ->
                     DropdownMenuItem(
-                        text = { Text(themeOption) },
+                        text = { Text(themeMap[key]!!) }, // Afișăm opțiunile traduse
                         onClick = {
-                            settingsViewModel.setSeasonTheme(themeOption)
+                            settingsViewModel.setSeasonTheme(key) // Salvăm codul intern!
                             expandedTheme = false
-                            // TODO: Aici vei apela funcția din ViewModel pentru a schimba efectiv culorile!
-                            // ex: settingsViewModel.setSeasonTheme(themeOption)
                         }
                     )
                 }
@@ -124,13 +133,14 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // 4. Mod Întunecat (Dark Mode)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Dark Theme",
+                text = stringResource(R.string.dark_theme_label),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = textColor
@@ -152,7 +162,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         // 5. Log Out
         TextButton(onClick = { /* Acțiune delogare */ }) {
             Text(
-                text = "Log Out",
+                text = stringResource(R.string.action_logout),
                 color = Color.Red,
                 style = MaterialTheme.typography.titleMedium
             )

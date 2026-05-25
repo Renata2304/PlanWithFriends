@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">PlanWithFriends</string>
+    <string name="language">Idioma</string>
+    <string name="color_theme">Tema de color</string>
+    <string name="dark_theme">Modo oscuro</string>
+    <string name="log_out">Cerrar sesión</string>
+    <string name="add_event">Añadir evento</string>
+    <string name="add_event_cd">Añadir evento</string>
+    <string name="events_for_date">Eventos del %1$s</string>
+    <string name="no_events_today">No hay eventos para este día.</string>
+    <string name="previous_month_cd">Anterior</string>
+    <string name="next_month_cd">Siguiente</string>
+
+    <string name="date_format_label">Fecha: %1$s</string>
+    <string name="event_title_label">Título del evento</string>
+    <string name="event_time_hint">Hora (toca para seleccionar)</string>
+
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_dismiss">Descartar</string>
+    <string name="action_ok">Aceptar</string>
+
+    <string-array name="days_of_week_short">
+        <item>L</item>
+        <item>M</item>
+        <item>X</item>
+        <item>J</item>
+        <item>V</item>
+        <item>S</item>
+        <item>D</item>
+    </string-array>
+
+    <string name="add_group_cd">Opciones de nuevo grupo</string>
+    <string name="create_new_group">Crear un nuevo grupo</string>
+    <string name="join_group">Unirse a un grupo</string>
+    <string name="avatar_cd">Avatar</string>
+
+    <string name="group_name_label">Nombre del grupo</string>
+    <string name="action_create">Crear</string>
+
+    <string name="join_group_description">Introduce el ID único del grupo recibido de tus amigos.</string>
+    <string name="group_id_label">ID del grupo</string>
+    <string name="action_join">Unirse</string>
+
+    <string name="navigate_back_cd">Atrás</string>
+    <string name="empty_group">Este grupo aún no tiene eventos ni miembros.</string>
+
+    <string name="profile_picture_cd">Foto de perfil</string>
+    <string name="language_label">Idioma</string>
+    <string name="theme_label">Tema de color</string>
+    <string name="dark_theme_label">Tema oscuro</string>
+    <string name="action_logout">Cerrar sesión</string>
+
+    <string-array name="languages_list">
+        <item>English</item>
+        <item>Română</item>
+        <item>Français</item>
+        <item>Español</item>
+    </string-array>
+
+    <string name="theme_auto">Auto (Estaciones)</string>
+    <string name="theme_spring">Primavera</string>
+    <string name="theme_summer">Verano</string>
+    <string name="theme_autumn">Otoño</string>
+    <string name="theme_winter">Invierno</string>
+</resources>

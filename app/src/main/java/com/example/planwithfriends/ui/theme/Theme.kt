@@ -103,16 +103,16 @@ private val WinterDarkColorScheme = darkColorScheme(
 @Composable
 fun PlanWithFriendsTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    season: String = "Auto (Anotimpuri)",
+    season: String = "auto",
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val actualSeason = if (season == "Auto (Anotimpuri)") {
+    val actualSeason = if (season == "auto") {
         when (LocalDate.now().monthValue) {
-            in 3..5 -> "Primăvară"
-            in 6..8 -> "Vară"
-            in 9..11 -> "Toamnă"
-            else -> "Iarnă"
+            in 3..5 -> "spring"
+            in 6..8 -> "summer"
+            in 9..11 -> "autumn"
+            else -> "winter"
         }
     } else {
         season
@@ -125,19 +125,19 @@ fun PlanWithFriendsTheme(
         }
         darkTheme -> {
             when (actualSeason) {
-                "Primăvară" -> SpringDarkColorScheme
-                "Vară" -> SummerDarkColorScheme
-                "Toamnă" -> AutumnDarkColorScheme
-                "Iarnă" -> WinterDarkColorScheme
+                "spring" -> SpringDarkColorScheme
+                "summer" -> SummerDarkColorScheme
+                "autumn" -> AutumnDarkColorScheme
+                "winter" -> WinterDarkColorScheme
                 else -> SpringDarkColorScheme
             }
         }
         else -> {
             when (actualSeason) {
-                "Primăvară" -> SpringColorScheme
-                "Vară" -> SummerColorScheme
-                "Toamnă" -> AutumnColorScheme
-                "Iarnă" -> WinterColorScheme
+                "spring" -> SpringColorScheme
+                "summer" -> SummerColorScheme
+                "autumn" -> AutumnColorScheme
+                "winter" -> WinterColorScheme
                 else -> SpringColorScheme
             }
         }

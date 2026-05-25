@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.example.planwithfriends.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,13 +28,14 @@ fun GroupDetailsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Înapoi"
+                            contentDescription = stringResource(R.string.navigate_back_cd)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.tertiary,
-                    titleContentColor = MaterialTheme.colorScheme.onTertiary
+                    titleContentColor = MaterialTheme.colorScheme.onTertiary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onTertiary
                 )
             )
         }
@@ -44,7 +47,7 @@ fun GroupDetailsScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Grupul este momentan gol.",
+                text = stringResource(R.string.empty_group),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray
             )

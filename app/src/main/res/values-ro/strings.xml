@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">PlanWithFriends</string>
+    <string name="language">Limbă</string>
+    <string name="color_theme">Temă Cromatică</string>
+    <string name="dark_theme">Mod Întunecat</string>
+    <string name="log_out">Deconectare</string>
+    <string name="add_event">Adaugă Eveniment</string>
+    <string name="add_event_cd">Adaugă Eveniment</string>
+    <string name="events_for_date">Evenimentele din %1$s</string>
+    <string name="no_events_today">Nu există evenimente pentru această zi.</string>
+    <string name="previous_month_cd">Înapoi</string>
+    <string name="next_month_cd">Înainte</string>
+
+    <string name="date_format_label">Dată: %1$s</string>
+    <string name="event_title_label">Titlu eveniment</string>
+    <string name="event_time_hint">Ora (apasă pentru a selecta)</string>
+
+    <string name="action_save">Salvează</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_ok">OK</string>
+
+    <string-array name="days_of_week_short">
+        <item>L</item>
+        <item>M</item>
+        <item>M</item>
+        <item>J</item>
+        <item>V</item>
+        <item>S</item>
+        <item>D</item>
+    </string-array>
+
+    <string name="add_group_cd">Opțiuni grup nou</string>
+    <string name="create_new_group">Crează un grup nou</string>
+    <string name="join_group">Alătură-te unui grup</string>
+    <string name="avatar_cd">Avatar</string>
+
+    <string name="group_name_label">Numele grupului</string>
+    <string name="action_create">Crează</string>
+
+    <string name="join_group_description">Introdu ID-ul unic al grupului primit de la prietenii tăi.</string>
+    <string name="group_id_label">ID Grup</string>
+    <string name="action_join">Înscrie-te</string>
+
+    <string name="action_cancel">Anulează</string>
+    <string name="navigate_back_cd">Înapoi</string>
+    <string name="empty_group">Acest grup nu are încă evenimente sau membri.</string>
+
+    <string name="profile_picture_cd">Poza de Profil</string>
+    <string name="language_label">Language</string>
+    <string name="theme_label">Temă Cromatică</string>
+    <string name="dark_theme_label">Dark Theme</string>
+    <string name="action_logout">Log Out</string>
+
+    <string-array name="languages_list">
+        <item>English</item>
+        <item>Română</item>
+        <item>Français</item>
+        <item>Español</item>
+    </string-array>
+
+    <string name="theme_auto">Auto (Seasons)</string>
+    <string name="theme_spring">Spring</string>
+    <string name="theme_summer">Summer</string>
+    <string name="theme_autumn">Autumn</string>
+    <string name="theme_winter">Winter</string>
+</resources>

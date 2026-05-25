@@ -1,7 +1,7 @@
 package com.example.planwithfriends
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,14 +12,16 @@ import com.example.planwithfriends.ui.PlanWithFriendsApp
 import com.example.planwithfriends.ui.screens.SettingsViewModel
 import com.example.planwithfriends.ui.theme.PlanWithFriendsTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
-            PlanWithFriendsTheme(darkTheme = settingsViewModel.isDarkTheme,
-                    season = settingsViewModel.currentSeasonTheme) {
+            PlanWithFriendsTheme(
+                darkTheme = settingsViewModel.isDarkTheme,
+                season = settingsViewModel.currentSeasonTheme
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {
