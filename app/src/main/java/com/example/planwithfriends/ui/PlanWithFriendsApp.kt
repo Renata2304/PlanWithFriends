@@ -85,7 +85,6 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                 composable("calendar") { CalendarScreen() }
                 composable("groups") { GroupsScreen() }
                 composable("settings") {
-                    // PASĂM MAI DEPARTE parametrul către SettingsScreen
                     SettingsScreen(settingsViewModel = settingsViewModel)
                 }
             }

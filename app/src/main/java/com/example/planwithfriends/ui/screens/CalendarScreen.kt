@@ -309,10 +309,10 @@ fun AddEventDialog(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = time,
-                        onValueChange = { }, // Nu facem nimic aici pentru că e readOnly
+                        onValueChange = { },
                         label = { Text("Ora (apasă pentru a selecta)") },
                         singleLine = true,
-                        readOnly = true, // Ascunde tastatura
+                        readOnly = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Box(
