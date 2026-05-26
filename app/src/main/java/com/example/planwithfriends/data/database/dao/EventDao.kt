@@ -20,4 +20,7 @@ interface EventDao {
 
     @Query("DELETE FROM events WHERE eventId = :eventId")
     suspend fun deleteEvent(eventId: String)
+
+    @Query("SELECT * FROM events WHERE groupId = :groupId")
+    fun getEventsForGroup(groupId: String): Flow<List<EventEntity>>
 }

@@ -66,4 +66,6 @@
 
     <string name="edit_event">Modifier l\'événement</string>
     <string name="action_delete">Supprimer</string>
+
+    <string name="copy_group_id">Copier l\'ID du groupe</string>
 </resources>

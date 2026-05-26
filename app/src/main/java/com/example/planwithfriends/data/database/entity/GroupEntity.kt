@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class GroupEntity(
     @PrimaryKey val groupId: String,
     val groupName: String,
-    val creatorId: String
+    val creatorId: String,
+    val memberCount: Int
 )

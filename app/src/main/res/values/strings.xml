@@ -66,4 +66,14 @@
 
     <string name="edit_event">Edit Event</string>
     <string name="action_delete">Delete</string>
+
+    <string name="group_menu_cd">Group Menu</string>
+    <string name="copy_group_id">Copy group code</string>
+    <string name="code_copied">Code copied: %1$s</string>
+    <string name="add_group_event_cd">Add Group Event</string>
+    <string name="no_events_in_group">No events in this group. Press + to plan something with your friends!</string>
+    <string name="date_at_time">%1$s at %2$s</string>
+    <string name="add_group_event_title">Add Group Event</string>
+    <string name="date_label">Date</string>
+    <string name="time_label">Time</string>
 </resources>

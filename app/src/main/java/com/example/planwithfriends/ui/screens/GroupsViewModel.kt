@@ -9,10 +9,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.planwithfriends.PlanWithFriendsApplication
 import com.example.planwithfriends.data.Group
 import com.example.planwithfriends.data.GroupsRepository
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class GroupsUiState(
@@ -21,21 +21,19 @@ data class GroupsUiState(
 
 class GroupsViewModel(private val groupsRepository: GroupsRepository) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(GroupsUiState())
-    val uiState: StateFlow<GroupsUiState> = _uiState.asStateFlow()
-
     private val currentUserId = "my_user_id_123"
 
-    init {
-        fetchGroups()
-    }
+    val uiState: StateFlow<GroupsUiState> = groupsRepository.getAllGroups()
+        .map { groups -> GroupsUiState(groupsList = groups) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = GroupsUiState()
+        )
 
-    private fun fetchGroups() {
+    init {
         viewModelScope.launch {
-            // .collect
-            groupsRepository.getAllGroups().collect { groups ->
-                _uiState.update { it.copy(groupsList = groups) }
-            }
+            groupsRepository.syncGroups()
         }
     }
 
