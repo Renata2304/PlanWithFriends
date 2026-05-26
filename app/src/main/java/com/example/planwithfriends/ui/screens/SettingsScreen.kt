@@ -121,9 +121,9 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             ) {
                 themeKeys.forEach { key ->
                     DropdownMenuItem(
-                        text = { Text(themeMap[key]!!) }, // Afișăm opțiunile traduse
+                        text = { Text(themeMap[key]!!) },
                         onClick = {
-                            settingsViewModel.setSeasonTheme(key) // Salvăm codul intern!
+                            settingsViewModel.setSeasonTheme(key)
                             expandedTheme = false
                         }
                     )

@@ -63,4 +63,7 @@
     <string name="theme_summer">Été</string>
     <string name="theme_autumn">Automne</string>
     <string name="theme_winter">Hiver</string>
+
+    <string name="edit_event">Modifier l\'événement</string>
+    <string name="action_delete">Supprimer</string>
 </resources>

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.planwithfriends.R
+import com.example.planwithfriends.data.Event
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -40,6 +41,8 @@ fun CalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
+
+    var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -106,10 +109,15 @@ fun CalendarScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.eventsForSelectedDate) { event ->
-                        EventCard(title = event.title, time = event.time)
+                        EventCard(
+                            title = event.title,
+                            time = event.time,
+                            onClick = { eventToEdit = event }
+                        )
                     }
                 }
             }
+
             if (showAddDialog) {
                 AddEventDialog(
                     selectedDate = uiState.selectedDate,
@@ -121,6 +129,23 @@ fun CalendarScreen(
                             date = uiState.selectedDate
                         )
                         showAddDialog = false
+                    }
+                )
+            }
+
+            eventToEdit?.let { event ->
+                EditEventDialog(
+                    initialTitle = event.title,
+                    initialTime = event.time,
+                    selectedDate = uiState.selectedDate,
+                    onDismiss = { eventToEdit = null },
+                    onSave = { newTitle, newTime ->
+                        viewModel.updateEvent(event, newTitle, newTime)
+                        eventToEdit = null
+                    },
+                    onDelete = {
+                        viewModel.deleteEvent(event)
+                        eventToEdit = null
                     }
                 )
             }
@@ -172,7 +197,6 @@ fun CalendarWidget(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Zilele săptămânii
             val daysOfWeek = stringArrayResource(R.array.days_of_week_short)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 daysOfWeek.forEach { day ->
@@ -246,9 +270,11 @@ fun CalendarWidget(
 }
 
 @Composable
-fun EventCard(title: String, time: String) {
+fun EventCard(title: String, time: String, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
@@ -291,7 +317,6 @@ fun AddEventDialog(
 ) {
     var title by remember { mutableStateOf("") }
     var time by remember { mutableStateOf("") }
-
     var showTimePicker by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -307,8 +332,6 @@ fun AddEventDialog(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
-
-                // Câmp pentru Titlu
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -316,8 +339,6 @@ fun AddEventDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                // Câmp pentru Oră (Apasabil)
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = time,
@@ -370,6 +391,94 @@ fun AddEventDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun EditEventDialog(
+    initialTitle: String,
+    initialTime: String,
+    selectedDate: LocalDate,
+    onDismiss: () -> Unit,
+    onSave: (title: String, time: String) -> Unit,
+    onDelete: () -> Unit
+) {
+    var title by remember { mutableStateOf(initialTitle) }
+    var time by remember { mutableStateOf(initialTime) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = stringResource(R.string.edit_event), fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.date_format_label, selectedDate),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text(stringResource(R.string.event_title_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = time,
+                        onValueChange = { },
+                        label = { Text(stringResource(R.string.event_time_hint)) },
+                        singleLine = true,
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Transparent)
+                            .clickable { showTimePicker = true }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (title.isNotBlank()) {
+                        onSave(title, time)
+                    }
+                }
+            ) {
+                Text(stringResource(R.string.action_save))
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = onDelete) {
+                    Text(stringResource(R.string.action_delete), color = Color.Red)
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.action_cancel), color = Color.Gray)
+                }
+            }
+        }
+    )
+
+    if (showTimePicker) {
+        DialWithDialogExample(
+            onConfirm = { timePickerState ->
+                val h = timePickerState.hour.toString().padStart(2, '0')
+                val m = timePickerState.minute.toString().padStart(2, '0')
+                time = "$h:$m"
+                showTimePicker = false
+            },
+            onDismiss = { showTimePicker = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun DialWithDialogExample(
     onConfirm: (TimePickerState) -> Unit,
     onDismiss: () -> Unit,
@@ -402,12 +511,12 @@ fun TimePickerDialog(
         onDismissRequest = onDismiss,
         dismissButton = {
             TextButton(onClick = { onDismiss() }) {
-                Text(stringResource(R.string.action_dismiss))
+                Text(stringResource(R.string.action_cancel))
             }
         },
         confirmButton = {
             TextButton(onClick = { onConfirm() }) {
-                Text(stringResource(R.string.action_ok))
+                Text("OK")
             }
         },
         text = { content() }

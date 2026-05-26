@@ -63,4 +63,7 @@
     <string name="theme_summer">Summer</string>
     <string name="theme_autumn">Autumn</string>
     <string name="theme_winter">Winter</string>
+
+    <string name="edit_event">Modifică Eveniment</string>
+    <string name="action_delete">Șterge</string>
 </resources>

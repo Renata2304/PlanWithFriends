@@ -14,4 +14,10 @@ interface EventDao {
 
     @Query("SELECT * FROM events WHERE date = :date")
     fun getEventsForDate(date: String): Flow<List<EventEntity>>
+
+    @Query("UPDATE events SET title = :newTitle, time = :newTime WHERE eventId = :eventId")
+    suspend fun updateEvent(eventId: String, newTitle: String, newTime: String)
+
+    @Query("DELETE FROM events WHERE eventId = :eventId")
+    suspend fun deleteEvent(eventId: String)
 }

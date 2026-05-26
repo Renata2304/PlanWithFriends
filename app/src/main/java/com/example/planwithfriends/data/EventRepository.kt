@@ -9,6 +9,8 @@ import java.util.UUID
 interface EventsRepository {
     fun getEventsForDate(date: String): Flow<List<Event>>
     suspend fun insertEvent(title: String, time: String, date: String)
+    suspend fun updateEvent(eventId: String, title: String, time: String)
+    suspend fun deleteEvent(eventId: String)
 }
 
 class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepository {
@@ -36,5 +38,13 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
             groupId = null
         )
         eventDao.insertEvent(newEntity)
+    }
+
+    override suspend fun updateEvent(eventId: String, title: String, time: String) {
+        eventDao.updateEvent(eventId, title, time)
+    }
+
+    override suspend fun deleteEvent(eventId: String) {
+        eventDao.deleteEvent(eventId)
     }
 }
