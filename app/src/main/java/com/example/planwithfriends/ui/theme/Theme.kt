@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
 
-// --- PRIMĂVARĂ ---
+// --- PRIMAVARA ---
 private val SpringColorScheme = lightColorScheme(
     primary = SpringPrimary,
     secondary = SpringSecondary,
@@ -31,7 +31,7 @@ private val SpringDarkColorScheme = darkColorScheme(
     onTertiary = Color.Black
 )
 
-// --- VARĂ ---
+// --- VARA ---
 private val SummerColorScheme = lightColorScheme(
     primary = SummerPrimary,
     secondary = SummerSecondary,
@@ -54,7 +54,7 @@ private val SummerDarkColorScheme = darkColorScheme(
     onTertiary = Color.Black
 )
 
-// --- TOAMNĂ ---
+// --- TOAMNA ---
 private val AutumnColorScheme = lightColorScheme(
     primary = AutumnPrimary,
     secondary = AutumnSecondary,
@@ -77,7 +77,7 @@ private val AutumnDarkColorScheme = darkColorScheme(
     onTertiary = Color.Black
 )
 
-// --- IARNĂ ---
+// --- IARNA ---
 private val WinterColorScheme = lightColorScheme(
     primary = WinterPrimary,
     secondary = WinterSecondary,

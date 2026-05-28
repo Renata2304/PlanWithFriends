@@ -81,4 +81,9 @@
     <string name="login_title">Log In</string>
     <string name="username_label">Username</string>
     <string name="logged_in_as">Logged in as: %1$s</string>
+
+    <string name="error_user_not_found">User does not exist!</string>
+    <string name="error_incorrect_password">Incorrect password!</string>
+    <string name="error_general">Error: %1$s</string>
+    <string name="error_username_taken">This username is already taken!</string>
 </resources>

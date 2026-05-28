@@ -16,7 +16,8 @@
     <string name="event_time_hint">Ora (apasă pentru a selecta)</string>
 
     <string name="action_save">Salvează</string>
-    <string name="action_dismiss">Dismiss</string>
+    <string name="action_cancel">Anulează</string>
+    <string name="action_dismiss">Renunță</string>
     <string name="action_ok">OK</string>
 
     <string-array name="days_of_week_short">
@@ -30,26 +31,25 @@
     </string-array>
 
     <string name="add_group_cd">Opțiuni grup nou</string>
-    <string name="create_new_group">Crează un grup nou</string>
+    <string name="create_new_group">Creează un grup nou</string>
     <string name="join_group">Alătură-te unui grup</string>
     <string name="avatar_cd">Avatar</string>
 
     <string name="group_name_label">Numele grupului</string>
-    <string name="action_create">Crează</string>
+    <string name="action_create">Creează</string>
 
     <string name="join_group_description">Introdu ID-ul unic al grupului primit de la prietenii tăi.</string>
     <string name="group_id_label">ID Grup</string>
     <string name="action_join">Înscrie-te</string>
 
-    <string name="action_cancel">Anulează</string>
     <string name="navigate_back_cd">Înapoi</string>
     <string name="empty_group">Acest grup nu are încă evenimente sau membri.</string>
 
     <string name="profile_picture_cd">Poza de Profil</string>
-    <string name="language_label">Language</string>
+    <string name="language_label">Limbă</string>
     <string name="theme_label">Temă Cromatică</string>
-    <string name="dark_theme_label">Dark Theme</string>
-    <string name="action_logout">Log Out</string>
+    <string name="dark_theme_label">Mod Întunecat</string>
+    <string name="action_logout">Deconectare</string>
 
     <string-array name="languages_list">
         <item>English</item>
@@ -58,27 +58,32 @@
         <item>Español</item>
     </string-array>
 
-    <string name="theme_auto">Auto (Seasons)</string>
-    <string name="theme_spring">Spring</string>
-    <string name="theme_summer">Summer</string>
-    <string name="theme_autumn">Autumn</string>
-    <string name="theme_winter">Winter</string>
+    <string name="theme_auto">Auto (Anotimpuri)</string>
+    <string name="theme_spring">Primăvară</string>
+    <string name="theme_summer">Vară</string>
+    <string name="theme_autumn">Toamnă</string>
+    <string name="theme_winter">Iarnă</string>
 
-    <string name="edit_event">Modifică Eveniment</string>
+    <string name="edit_event">Editează Evenimentul</string>
     <string name="action_delete">Șterge</string>
 
     <string name="group_menu_cd">Meniu Grup</string>
     <string name="copy_group_id">Copiază codul grupului</string>
     <string name="code_copied">Cod copiat: %1$s</string>
     <string name="add_group_event_cd">Adaugă Eveniment de Grup</string>
-    <string name="no_events_in_group">Nu există evenimente în acest grup. Apasă pe + pentru a planifica ceva cu prietenii!</string>
+    <string name="no_events_in_group">Nu există evenimente în acest grup. Apasă + pentru a plănui ceva cu prietenii tăi!</string>
     <string name="date_at_time">%1$s la %2$s</string>
     <string name="add_group_event_title">Adaugă Eveniment de Grup</string>
     <string name="date_label">Data</string>
     <string name="time_label">Ora</string>
 
-    <string name="action_login">Conectare / Creare Cont</string>
-    <string name="login_title">Conectează-te</string>
+    <string name="action_login">Autentificare / Creare Cont</string>
+    <string name="login_title">Autentificare</string>
     <string name="username_label">Nume de utilizator</string>
-    <string name="logged_in_as">Ești conectat ca: %1$s</string>
+    <string name="logged_in_as">Autentificat ca: %1$s</string>
+
+    <string name="error_user_not_found">Utilizatorul nu există!</string>
+    <string name="error_incorrect_password">Parolă incorectă!</string>
+    <string name="error_general">Eroare: %1$s</string>
+    <string name="error_username_taken">Acest nume de utilizator este deja folosit!</string>
 </resources>

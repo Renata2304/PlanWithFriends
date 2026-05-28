@@ -17,7 +17,7 @@
 
     <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
-    <string name="action_dismiss">Descartar</string>
+    <string name="action_dismiss">Cerrar</string>
     <string name="action_ok">Aceptar</string>
 
     <string-array name="days_of_week_short">
@@ -67,5 +67,23 @@
     <string name="edit_event">Editar evento</string>
     <string name="action_delete">Eliminar</string>
 
-    <string name="copy_group_id">Copiar el ID del grupo</string>
+    <string name="group_menu_cd">Menú del grupo</string>
+    <string name="copy_group_id">Copiar código del grupo</string>
+    <string name="code_copied">Código copiado: %1$s</string>
+    <string name="add_group_event_cd">Añadir evento de grupo</string>
+    <string name="no_events_in_group">No hay eventos en este grupo. ¡Pulsa + para planear algo con tus amigos!</string>
+    <string name="date_at_time">%1$s a las %2$s</string>
+    <string name="add_group_event_title">Añadir evento de grupo</string>
+    <string name="date_label">Fecha</string>
+    <string name="time_label">Hora</string>
+
+    <string name="action_login">Iniciar sesión / Crear cuenta</string>
+    <string name="login_title">Iniciar sesión</string>
+    <string name="username_label">Nombre de usuario</string>
+    <string name="logged_in_as">Sesión iniciada como: %1$s</string>
+
+    <string name="error_user_not_found">¡El usuario no existe!</string>
+    <string name="error_incorrect_password">¡Contraseña incorrecta!</string>
+    <string name="error_general">Error: %1$s</string>
+    <string name="error_username_taken">¡Este nombre de usuario ya está en uso!</string>
 </resources>

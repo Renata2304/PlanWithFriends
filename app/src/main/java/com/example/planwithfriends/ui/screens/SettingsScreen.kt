@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.planwithfriends.R
 
@@ -23,7 +25,7 @@ import com.example.planwithfriends.R
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expandedLanguage by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
-    var showLoginDialog by remember { mutableStateOf(false) }
+    var showLoginDialog by remember { mutableStateOf(false) } // Starea care deschide dialogul
 
     val languages = stringArrayResource(R.array.languages_list)
     val selectedLanguage = settingsViewModel.currentLanguage ?: languages[0]
@@ -150,7 +152,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 4. Mod Întunecat
+        // 4. Mod Intunecat
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -176,7 +178,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 5. Autentificare / Log Out Dinamic
         if (isLoggedIn) {
             TextButton(onClick = { settingsViewModel.logout() }) {
                 Text(
@@ -199,49 +200,86 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         }
 
         if (showLoginDialog) {
-            LoginDialog(
-                onDismiss = { showLoginDialog = false },
-                onLogin = { username ->
-                    settingsViewModel.login(username)
-                    showLoginDialog = false
-                }
+            AuthDialog(
+                viewModel = settingsViewModel,
+                onDismiss = { showLoginDialog = false }
             )
         }
     }
 }
 
 @Composable
-fun LoginDialog(
-    onDismiss: () -> Unit,
-    onLogin: (String) -> Unit
+fun AuthDialog(
+    viewModel: SettingsViewModel,
+    onDismiss: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) { viewModel.clearAuthError() }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = stringResource(R.string.login_title), fontWeight = FontWeight.Bold) },
+        title = { Text(text = "Conectare / Înregistrare", fontWeight = FontWeight.Bold) },
         text = {
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it.trim() },
-                label = { Text(stringResource(R.string.username_label)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                viewModel.authErrorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it.trim() },
+                    label = { Text(stringResource(R.string.username_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it.trim() },
+                    label = { Text("Parolă") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (viewModel.isAuthLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+            }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    if (username.isNotBlank()) {
-                        onLogin(username)
-                    }
-                }
-            ) {
-                Text("OK")
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
+                TextButton(
+                    onClick = {
+                        if (username.isNotBlank() && password.isNotBlank()) {
+                            viewModel.login(username, password) { onDismiss() }
+                        }
+                    },
+                    enabled = !viewModel.isAuthLoading
+                ) { Text("Log In") }
+
+                TextButton(
+                    onClick = {
+                        if (username.isNotBlank() && password.isNotBlank()) {
+                            viewModel.register(username, password) { onDismiss() }
+                        }
+                    },
+                    enabled = !viewModel.isAuthLoading
+                ) { Text("Creează cont nou") }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = Color.Gray) }
+            TextButton(onClick = onDismiss, enabled = !viewModel.isAuthLoading) {
+                Text(stringResource(R.string.action_cancel), color = Color.Gray)
+            }
         }
     )
 }

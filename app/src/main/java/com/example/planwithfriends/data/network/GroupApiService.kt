@@ -23,4 +23,10 @@ interface GroupApiService {
 
     @GET("groups")
     suspend fun getGroupByCode(@Query("groupId") groupId: String): List<NetworkGroup>
+
+    @GET("users")
+    suspend fun getUserByUsername(@Query("q") query: String): List<NetworkUser>
+
+    @POST("users")
+    suspend fun createUser(@Body user: NetworkUser): NetworkUser
 }
