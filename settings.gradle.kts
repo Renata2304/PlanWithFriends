@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Plan With Friends"
 include(":app")
- 

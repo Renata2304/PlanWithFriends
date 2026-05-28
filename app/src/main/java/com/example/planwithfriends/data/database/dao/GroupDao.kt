@@ -6,7 +6,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.planwithfriends.data.database.entity.GroupEntity
 import com.example.planwithfriends.data.database.entity.UserGroupCrossRef
+import com.example.planwithfriends.data.network.NetworkGroup
 import kotlinx.coroutines.flow.Flow
+import retrofit2.http.GET
 
 @Dao
 interface GroupDao {
@@ -18,4 +20,7 @@ interface GroupDao {
 
     @Query("SELECT * FROM groups")
     fun getAllGroups(): Flow<List<GroupEntity>>
+
+    @Query("SELECT * FROM groups")
+    suspend fun getAllGroupsOnce(): List<GroupEntity>
 }

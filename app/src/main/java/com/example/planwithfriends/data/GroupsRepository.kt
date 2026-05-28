@@ -8,12 +8,14 @@ import com.example.planwithfriends.data.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
+import kotlin.collections.forEach
 
 interface GroupsRepository {
     fun getAllGroups(): Flow<List<Group>>
     suspend fun createGroup(name: String, userId: String)
     suspend fun joinGroup(groupId: String, userId: String)
     suspend fun syncGroups()
+    suspend fun mergeOfflineDataWithServer(newUsername: String)
 }
 
 class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepository {
@@ -39,15 +41,21 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
 
     override suspend fun syncGroups() {
         try {
-            val networkGroups = RetrofitClient.apiService.getAllGroups()
-            networkGroups.forEach { netGroup ->
-                val localEntity = GroupEntity(
-                    groupId = netGroup.id,
-                    groupName = netGroup.name,
-                    creatorId = "synced_from_api",
-                    memberCount = netGroup.memberCount
-                )
-                groupDao.insertGroup(localEntity)
+            val localGroups = groupDao.getAllGroupsOnce()
+
+            localGroups.forEach { localGroup ->
+                val networkResult = RetrofitClient.apiService.getGroupByCode(localGroup.groupId)
+
+                if (networkResult.isNotEmpty()) {
+                    val netGroup = networkResult[0]
+                    val updatedEntity = GroupEntity(
+                        groupId = netGroup.id,
+                        groupName = netGroup.name,
+                        creatorId = localGroup.creatorId,
+                        memberCount = netGroup.memberCount
+                    )
+                    groupDao.insertGroup(updatedEntity)
+                }
             }
         } catch (e: Exception) {
             Log.e("API_SYNC", "Eroare la sincronizarea grupurilor: ${e.message}")
@@ -66,13 +74,69 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
 
             RetrofitClient.apiService.createGroup(newNetworkGroup)
 
+            val localEntity = GroupEntity(
+                groupId = shortGroupId,
+                groupName = name,
+                creatorId = userId,
+                memberCount = 1
+            )
+            groupDao.insertGroup(localEntity)
+
             syncGroups()
         } catch (e: Exception) {
             Log.e("API_SYNC", "Eroare la crearea grupului: ${e.message}")
         }
     }
 
+    override suspend fun mergeOfflineDataWithServer(newUsername: String) {
+        try {
+            val localGroups = groupDao.getAllGroupsOnce()
+
+            localGroups.forEach { group ->
+                if (group.creatorId == "my_user_id_123" || group.creatorId == "offline_user") {
+
+                    val newNetworkGroup = NetworkGroup(
+                        id = group.groupId,
+                        name = group.groupName,
+                        memberCount = group.memberCount
+                    )
+
+                    RetrofitClient.apiService.createGroup(newNetworkGroup)
+
+                    val updatedEntity = GroupEntity(
+                        groupId = group.groupId,
+                        groupName = group.groupName,
+                        creatorId = newUsername,
+                        memberCount = group.memberCount
+                    )
+                    groupDao.insertGroup(updatedEntity)
+                }
+            }
+
+            syncGroups()
+
+        } catch (e: Exception) {
+            Log.e("API_SYNC", "Eroare la migrarea datelor offline: ${e.message}")
+        }
+    }
+
     override suspend fun joinGroup(groupId: String, userId: String) {
-        syncGroups()
+        try {
+            val networkResult = RetrofitClient.apiService.getGroupByCode(groupId)
+
+            if (networkResult.isNotEmpty()) {
+                val foundGroup = networkResult[0]
+
+                val localEntity = GroupEntity(
+                    groupId = foundGroup.id,
+                    groupName = foundGroup.name,
+                    creatorId = userId,
+                    memberCount = foundGroup.memberCount + 1
+                )
+                groupDao.insertGroup(localEntity)
+            }
+        } catch (e: Exception) {
+            Log.e("API_SYNC", "Eroare la alăturarea în grup: ${e.message}")
+        }
     }
 }

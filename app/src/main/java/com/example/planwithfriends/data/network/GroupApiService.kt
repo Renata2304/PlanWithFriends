@@ -20,4 +20,7 @@ interface GroupApiService {
 
     @POST("groups")
     suspend fun createGroup(@Body group: NetworkGroup): NetworkGroup
+
+    @GET("groups")
+    suspend fun getGroupByCode(@Query("groupId") groupId: String): List<NetworkGroup>
 }
