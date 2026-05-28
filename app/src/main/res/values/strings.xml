@@ -76,4 +76,9 @@
     <string name="add_group_event_title">Add Group Event</string>
     <string name="date_label">Date</string>
     <string name="time_label">Time</string>
+
+    <string name="action_login">Log In / Create Account</string>
+    <string name="login_title">Log In</string>
+    <string name="username_label">Username</string>
+    <string name="logged_in_as">Logged in as: %1$s</string>
 </resources>

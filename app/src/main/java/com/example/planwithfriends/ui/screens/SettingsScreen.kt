@@ -23,9 +23,10 @@ import com.example.planwithfriends.R
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expandedLanguage by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     val languages = stringArrayResource(R.array.languages_list)
-    val selectedLanguage = settingsViewModel.currentLanguage
+    val selectedLanguage = settingsViewModel.currentLanguage ?: languages[0]
 
     val textColor = MaterialTheme.colorScheme.onBackground
 
@@ -39,6 +40,10 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
     val themeKeys = themeMap.keys.toList()
 
     val selectedThemeDisplayText = themeMap[settingsViewModel.currentSeasonTheme] ?: themeMap["auto"]!!
+
+    // Starea curentă a utilizatorului (din ViewModel)
+    val currentUsername = settingsViewModel.currentUser
+    val isLoggedIn = currentUsername != null
 
     Column(
         modifier = modifier
@@ -57,9 +62,21 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             tint = if (settingsViewModel.isDarkTheme) Color.LightGray else Color.Gray
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. Setare Limbă (Language Dropdown)
+        // Numele utilizatorului dacă e logat
+        if (isLoggedIn) {
+            Text(
+                text = stringResource(R.string.logged_in_as, currentUsername!!),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // 2. Setare Limbă
         ExposedDropdownMenuBox(
             expanded = expandedLanguage,
             onExpandedChange = { expandedLanguage = !expandedLanguage }
@@ -96,13 +113,13 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Setare Temă Cromatică / Anotimp
+        // 3. Setare Temă
         ExposedDropdownMenuBox(
             expanded = expandedTheme,
             onExpandedChange = { expandedTheme = !expandedTheme }
         ) {
             OutlinedTextField(
-                value = selectedThemeDisplayText, // Afișăm traducerea!
+                value = selectedThemeDisplayText,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text(stringResource(id = R.string.color_theme), color = textColor) },
@@ -133,7 +150,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 4. Mod Întunecat (Dark Mode)
+        // 4. Mod Întunecat
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -159,13 +176,72 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 5. Log Out
-        TextButton(onClick = { /* Acțiune delogare */ }) {
-            Text(
-                text = stringResource(R.string.action_logout),
-                color = Color.Red,
-                style = MaterialTheme.typography.titleMedium
+        // 5. Autentificare / Log Out Dinamic
+        if (isLoggedIn) {
+            TextButton(onClick = { settingsViewModel.logout() }) {
+                Text(
+                    text = stringResource(R.string.action_logout),
+                    color = Color.Red,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        } else {
+            Button(
+                onClick = { showLoginDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.action_login),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        }
+
+        if (showLoginDialog) {
+            LoginDialog(
+                onDismiss = { showLoginDialog = false },
+                onLogin = { username ->
+                    settingsViewModel.login(username)
+                    showLoginDialog = false
+                }
             )
         }
     }
+}
+
+@Composable
+fun LoginDialog(
+    onDismiss: () -> Unit,
+    onLogin: (String) -> Unit
+) {
+    var username by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = stringResource(R.string.login_title), fontWeight = FontWeight.Bold) },
+        text = {
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it.trim() },
+                label = { Text(stringResource(R.string.username_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (username.isNotBlank()) {
+                        onLogin(username)
+                    }
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = Color.Gray) }
+        }
+    )
 }

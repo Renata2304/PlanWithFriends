@@ -76,4 +76,9 @@
     <string name="add_group_event_title">Adaugă Eveniment de Grup</string>
     <string name="date_label">Data</string>
     <string name="time_label">Ora</string>
+
+    <string name="action_login">Conectare / Creare Cont</string>
+    <string name="login_title">Conectează-te</string>
+    <string name="username_label">Nume de utilizator</string>
+    <string name="logged_in_as">Ești conectat ca: %1$s</string>
 </resources>
