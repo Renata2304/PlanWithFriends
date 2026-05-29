@@ -1,6 +1,6 @@
 # Plan With Friends
 
-** Văideanu Renata - Georgia **
+## Văideanu Renata - Georgia ##
 
 Plan With Friends is a modern Android application designed to help users organize events and collaborate with their peers seamlessly. Built with an "Offline-First" approach, the app ensures that users can manage their schedules, groups, and events without an active internet connection, automatically synchronizing data with a cloud server once the network is restored.
 
