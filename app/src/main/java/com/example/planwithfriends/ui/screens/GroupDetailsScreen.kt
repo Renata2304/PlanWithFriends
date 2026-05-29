@@ -38,9 +38,15 @@ fun GroupDetailsScreen(
     onNavigateBack: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as PlanWithFriendsApplication
+
+    // AICI ERA EROAREA: Acum îi pasăm și groupsRepository!
     val viewModel: GroupDetailsViewModel = viewModel(
         key = groupId,
-        factory = GroupDetailsViewModel.provideFactory(app.container.eventsRepository, groupId)
+        factory = GroupDetailsViewModel.provideFactory(
+            eventsRepository = app.container.eventsRepository,
+            groupsRepository = app.container.groupsRepository,
+            groupId = groupId
+        )
     )
 
     val events by viewModel.groupEvents.collectAsState()
@@ -77,6 +83,17 @@ fun GroupDetailsScreen(
                                 clipboardManager.setText(AnnotatedString(groupId))
                                 Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
                                 showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = "Părăsește grupul", color = Color.Red, fontWeight = FontWeight.Bold) },
+                            onClick = {
+                                showMenu = false
+                                viewModel.leaveCurrentGroup(
+                                    onSuccess = {
+                                        onNavigateBack()
+                                    }
+                                )
                             }
                         )
                     }

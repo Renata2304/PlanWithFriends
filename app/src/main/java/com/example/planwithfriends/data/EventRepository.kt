@@ -3,7 +3,7 @@ package com.example.planwithfriends.data
 import android.util.Log
 import com.example.planwithfriends.data.database.dao.EventDao
 import com.example.planwithfriends.data.database.entity.EventEntity
-import com.example.planwithfriends.data.network.NetworkGroupEvent
+import com.example.planwithfriends.data.network.NetworkGroupEvent // Asigură-te că și modelul ăsta are _id opțional
 import com.example.planwithfriends.data.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -47,20 +47,48 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
     }
 
     override suspend fun updateEvent(eventId: String, title: String, time: String) {
-        eventDao.updateEvent(eventId, title, time)
+        try {
+            eventDao.updateEvent(eventId, title, time)
+
+            val existingEvent = eventDao.getEventById(eventId)
+
+            if (existingEvent != null && existingEvent.groupId != null) {
+                val updatedNetworkEvent = NetworkGroupEvent(
+                    groupId = existingEvent.groupId,
+                    title = title,
+                    time = time,
+                    date = existingEvent.date
+                )
+
+                RetrofitClient.apiService.updateEvent(eventId, updatedNetworkEvent)
+            }
+        } catch (e: Exception) {
+            Log.e("API_SYNC", "Eroare la actualizarea evenimentului pe rețea: ${e.message}")
+        }
     }
 
     override suspend fun deleteEvent(eventId: String) {
-        eventDao.deleteEvent(eventId)
+        try {
+            val existingEvent = eventDao.getEventById(eventId)
+
+            eventDao.deleteEvent(eventId)
+
+            if (existingEvent != null && existingEvent.groupId != null) {
+                RetrofitClient.apiService.deleteEvent(eventId)
+            }
+        } catch (e: Exception) {
+            Log.e("API_SYNC", "Eroare la ștergerea evenimentului de pe rețea: ${e.message}")
+        }
     }
 
     override suspend fun syncEventsForGroup(groupId: String) {
         try {
-            val networkEvents = RetrofitClient.apiService.getEventsForGroup(groupId)
+            val queryStr = "{\"groupId\":\"$groupId\"}"
+            val networkEvents = RetrofitClient.apiService.getEventsForGroup(queryStr)
 
             networkEvents.forEach { netEvent ->
                 val localEntity = EventEntity(
-                    eventId = netEvent.id,
+                    eventId = netEvent.id ?: UUID.randomUUID().toString(),
                     title = netEvent.title,
                     time = netEvent.time,
                     date = netEvent.date,
@@ -70,14 +98,13 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
                 eventDao.insertEvent(localEntity)
             }
         } catch (e: Exception) {
-            Log.e("API_SYNC", "Eroare la sincronizare: ${e.message}")
+            Log.e("API_SYNC", "Eroare la sincronizare evenimente: ${e.message}")
         }
     }
 
     override suspend fun addEventToGroupNetwork(title: String, time: String, date: String, groupId: String) {
         try {
             val newNetworkEvent = NetworkGroupEvent(
-                id = UUID.randomUUID().toString(),
                 groupId = groupId,
                 title = title,
                 time = time,

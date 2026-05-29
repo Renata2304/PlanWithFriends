@@ -7,8 +7,6 @@ import com.example.planwithfriends.data.network.NetworkGroup
 import com.example.planwithfriends.data.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.util.UUID
-import kotlin.collections.forEach
 
 interface GroupsRepository {
     fun getAllGroups(): Flow<List<Group>>
@@ -16,6 +14,7 @@ interface GroupsRepository {
     suspend fun joinGroup(groupId: String, userId: String)
     suspend fun syncGroups()
     suspend fun mergeOfflineDataWithServer(newUsername: String)
+    suspend fun leaveGroup(groupId: String)
 }
 
 class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepository {
@@ -44,12 +43,13 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
             val localGroups = groupDao.getAllGroupsOnce()
 
             localGroups.forEach { localGroup ->
-                val networkResult = RetrofitClient.apiService.getGroupByCode(localGroup.groupId)
+                val queryStr = "{\"groupId\":\"${localGroup.groupId}\"}"
+                val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
 
                 if (networkResult.isNotEmpty()) {
                     val netGroup = networkResult[0]
                     val updatedEntity = GroupEntity(
-                        groupId = netGroup.id,
+                        groupId = netGroup.groupId,
                         groupName = netGroup.name,
                         creatorId = localGroup.creatorId,
                         memberCount = netGroup.memberCount
@@ -67,7 +67,7 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
             val shortGroupId = generateShortCode()
 
             val newNetworkGroup = NetworkGroup(
-                id = shortGroupId,
+                groupId = shortGroupId,
                 name = name,
                 memberCount = 1
             )
@@ -96,7 +96,7 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                 if (group.creatorId == "my_user_id_123" || group.creatorId == "offline_user") {
 
                     val newNetworkGroup = NetworkGroup(
-                        id = group.groupId,
+                        groupId = group.groupId,
                         name = group.groupName,
                         memberCount = group.memberCount
                     )
@@ -122,21 +122,60 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
 
     override suspend fun joinGroup(groupId: String, userId: String) {
         try {
-            val networkResult = RetrofitClient.apiService.getGroupByCode(groupId)
+            val queryStr = "{\"groupId\":\"$groupId\"}"
+            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
 
             if (networkResult.isNotEmpty()) {
-                val foundGroup = networkResult[0]
+                val serverGroup = networkResult[0]
+                val serverObjectId = serverGroup.id ?: return
+
+                val noulNumarDeMembri = serverGroup.memberCount + 1
 
                 val localEntity = GroupEntity(
-                    groupId = foundGroup.id,
-                    groupName = foundGroup.name,
+                    groupId = serverGroup.groupId,
+                    groupName = serverGroup.name,
                     creatorId = userId,
-                    memberCount = foundGroup.memberCount + 1
+                    memberCount = noulNumarDeMembri
                 )
                 groupDao.insertGroup(localEntity)
+
+                val updatedNetworkGroup = NetworkGroup(
+                    groupId = serverGroup.groupId,
+                    name = serverGroup.name,
+                    memberCount = noulNumarDeMembri
+                )
+                RetrofitClient.apiService.updateGroup(serverObjectId, updatedNetworkGroup)
             }
         } catch (e: Exception) {
             Log.e("API_SYNC", "Eroare la alăturarea în grup: ${e.message}")
+        }
+    }
+
+    override suspend fun leaveGroup(groupId: String) {
+        try {
+            groupDao.deleteGroupById(groupId)
+
+            val queryStr = "{\"groupId\":\"$groupId\"}"
+            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
+
+            if (networkResult.isNotEmpty()) {
+                val serverGroup = networkResult[0]
+
+                val serverObjectId = serverGroup.id ?: return
+
+                if (serverGroup.memberCount > 1) {
+                    val updatedGroup = NetworkGroup(
+                        groupId = serverGroup.groupId,
+                        name = serverGroup.name,
+                        memberCount = serverGroup.memberCount - 1
+                    )
+                    RetrofitClient.apiService.updateGroup(serverObjectId, updatedGroup)
+                } else {
+                    RetrofitClient.apiService.deleteGroup(serverObjectId)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("API_SYNC", "Eroare la părăsirea grupului: ${e.message}")
         }
     }
 }

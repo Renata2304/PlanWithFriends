@@ -23,4 +23,7 @@ interface GroupDao {
 
     @Query("SELECT * FROM groups")
     suspend fun getAllGroupsOnce(): List<GroupEntity>
+
+    @Query("DELETE FROM groups WHERE groupId = :groupId")
+    suspend fun deleteGroupById(groupId: String)
 }

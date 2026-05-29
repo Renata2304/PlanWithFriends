@@ -2,13 +2,12 @@ package com.example.planwithfriends.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.planwithfriends.PlanWithFriendsApplication
 import com.example.planwithfriends.data.Event
 import com.example.planwithfriends.data.EventsRepository
+import com.example.planwithfriends.data.GroupsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 
 class GroupDetailsViewModel(
     private val eventsRepository: EventsRepository,
+    private val groupsRepository: GroupsRepository,
     private val groupId: String
 ) : ViewModel() {
 
@@ -42,7 +42,6 @@ class GroupDetailsViewModel(
         }
     }
 
-    // AICI am mutat funcțiile tale!
     fun updateGroupEvent(event: Event, newTitle: String, newTime: String) {
         viewModelScope.launch {
             eventsRepository.updateEvent(event.id, newTitle, newTime)
@@ -55,10 +54,21 @@ class GroupDetailsViewModel(
         }
     }
 
+    fun leaveCurrentGroup(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            groupsRepository.leaveGroup(groupId)
+            onSuccess()
+        }
+    }
+
     companion object {
-        fun provideFactory(eventsRepository: EventsRepository, groupId: String): ViewModelProvider.Factory = viewModelFactory {
+        fun provideFactory(
+            eventsRepository: EventsRepository,
+            groupsRepository: GroupsRepository,
+            groupId: String
+        ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                GroupDetailsViewModel(eventsRepository, groupId)
+                GroupDetailsViewModel(eventsRepository, groupsRepository, groupId)
             }
         }
     }
