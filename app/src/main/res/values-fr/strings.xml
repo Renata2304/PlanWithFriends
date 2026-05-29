@@ -86,4 +86,11 @@
     <string name="error_incorrect_password">Mot de passe incorrect !</string>
     <string name="error_general">Erreur : %1$s</string>
     <string name="error_username_taken">Ce nom d\'utilisateur est déjà pris !</string>
+
+    <string name="login_register_title">Connexion / Inscription</string>
+    <string name="password_label">Mot de passe</string>
+    <string name="action_login_button">Se connecter</string>
+    <string name="action_create_account">Créer un nouveau compte</string>
+
+    <string name="leave_group">Quitter le groupe</string>
 </resources>

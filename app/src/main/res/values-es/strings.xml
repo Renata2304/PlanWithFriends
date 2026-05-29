@@ -86,4 +86,11 @@
     <string name="error_incorrect_password">¡Contraseña incorrecta!</string>
     <string name="error_general">Error: %1$s</string>
     <string name="error_username_taken">¡Este nombre de usuario ya está en uso!</string>
+
+    <string name="login_register_title">Iniciar sesión / Registrarse</string>
+    <string name="password_label">Contraseña</string>
+    <string name="action_login_button">Iniciar sesión</string>
+    <string name="action_create_account">Crear cuenta nueva</string>
+
+    <string name="leave_group">Salir del grupo</string>
 </resources>

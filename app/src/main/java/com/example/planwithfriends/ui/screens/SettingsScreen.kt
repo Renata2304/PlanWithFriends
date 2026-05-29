@@ -25,7 +25,7 @@ import com.example.planwithfriends.R
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expandedLanguage by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
-    var showLoginDialog by remember { mutableStateOf(false) } // Starea care deschide dialogul
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     val languages = stringArrayResource(R.array.languages_list)
     val selectedLanguage = settingsViewModel.currentLanguage ?: languages[0]
@@ -43,7 +43,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
     val selectedThemeDisplayText = themeMap[settingsViewModel.currentSeasonTheme] ?: themeMap["auto"]!!
 
-    // Starea curentă a utilizatorului (din ViewModel)
+    // Starea curenta a utilizatorului
     val currentUsername = settingsViewModel.currentUser
     val isLoggedIn = currentUsername != null
 
@@ -66,7 +66,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Numele utilizatorului dacă e logat
+        // Numele utilizatorului daca e logat
         if (isLoggedIn) {
             Text(
                 text = stringResource(R.string.logged_in_as, currentUsername!!),
@@ -78,7 +78,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. Setare Limbă
+        // 2. Setare Limba
         ExposedDropdownMenuBox(
             expanded = expandedLanguage,
             onExpandedChange = { expandedLanguage = !expandedLanguage }
@@ -115,7 +115,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Setare Temă
+        // 3. Setare Tema
         ExposedDropdownMenuBox(
             expanded = expandedTheme,
             onExpandedChange = { expandedTheme = !expandedTheme }
@@ -220,7 +220,7 @@ fun AuthDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Conectare / Înregistrare", fontWeight = FontWeight.Bold) },
+        title = { Text(text = stringResource(R.string.login_register_title), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 viewModel.authErrorMessage?.let { error ->
@@ -244,7 +244,7 @@ fun AuthDialog(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it.trim() },
-                    label = { Text("Parolă") },
+                    label = { Text(stringResource(R.string.password_label)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
@@ -264,7 +264,7 @@ fun AuthDialog(
                         }
                     },
                     enabled = !viewModel.isAuthLoading
-                ) { Text("Log In") }
+                ) { Text(stringResource(R.string.action_login_button)) }
 
                 TextButton(
                     onClick = {
@@ -273,7 +273,7 @@ fun AuthDialog(
                         }
                     },
                     enabled = !viewModel.isAuthLoading
-                ) { Text("Creează cont nou") }
+                ) { Text(stringResource(R.string.action_create_account)) }
             }
         },
         dismissButton = {

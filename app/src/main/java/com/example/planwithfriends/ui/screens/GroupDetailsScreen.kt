@@ -39,7 +39,6 @@ fun GroupDetailsScreen(
 ) {
     val app = LocalContext.current.applicationContext as PlanWithFriendsApplication
 
-    // AICI ERA EROAREA: Acum îi pasăm și groupsRepository!
     val viewModel: GroupDetailsViewModel = viewModel(
         key = groupId,
         factory = GroupDetailsViewModel.provideFactory(
@@ -66,7 +65,7 @@ fun GroupDetailsScreen(
                 title = { Text(groupName, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.navigate_back_cd))
                     }
                 },
                 actions = {
@@ -86,7 +85,7 @@ fun GroupDetailsScreen(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(text = "Părăsește grupul", color = Color.Red, fontWeight = FontWeight.Bold) },
+                            text = { Text(text = stringResource(R.string.leave_group), color = Color.Red, fontWeight = FontWeight.Bold) },
                             onClick = {
                                 showMenu = false
                                 viewModel.leaveCurrentGroup(

@@ -86,4 +86,11 @@
     <string name="error_incorrect_password">Parolă incorectă!</string>
     <string name="error_general">Eroare: %1$s</string>
     <string name="error_username_taken">Acest nume de utilizator este deja folosit!</string>
+
+    <string name="login_register_title">Conectare / Înregistrare</string>
+    <string name="password_label">Parolă</string>
+    <string name="action_login_button">Log In</string>
+    <string name="action_create_account">Creează cont nou</string>
+
+    <string name="leave_group">Părăsește grupul</string>
 </resources>
