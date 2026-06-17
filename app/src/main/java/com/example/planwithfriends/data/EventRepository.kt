@@ -1,9 +1,8 @@
 package com.example.planwithfriends.data
 
-import android.util.Log
 import com.example.planwithfriends.data.database.dao.EventDao
 import com.example.planwithfriends.data.database.entity.EventEntity
-import com.example.planwithfriends.data.network.NetworkGroupEvent // Asigură-te că și modelul ăsta are _id opțional
+import com.example.planwithfriends.data.network.NetworkGroupEvent
 import com.example.planwithfriends.data.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -17,9 +16,23 @@ interface EventsRepository {
     suspend fun syncEventsForGroup(groupId: String)
     suspend fun addEventToGroupNetwork(title: String, time: String, date: String, groupId: String)
     fun getEventsForGroup(groupId: String): Flow<List<Event>>
+
+    suspend fun getAllEventsOnce(): List<Event>
 }
 
 class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepository {
+
+    override suspend fun getAllEventsOnce(): List<Event> {
+        return eventDao.getAllEventsOnce().map { entity ->
+            Event(
+                id = entity.eventId,
+                title = entity.title,
+                time = entity.time,
+                date = entity.date,
+                groupId = entity.groupId
+            )
+        }
+    }
 
     override fun getEventsForDate(date: String): Flow<List<Event>> {
         return eventDao.getEventsForDate(date).map { entities ->
@@ -28,7 +41,8 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
                     id = entity.eventId,
                     title = entity.title,
                     time = entity.time,
-                    date = entity.date
+                    date = entity.date,
+                    groupId = entity.groupId // ADAUGAT SI AICI
                 )
             }
         }
@@ -110,7 +124,8 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
                     id = entity.eventId,
                     title = entity.title,
                     time = entity.time,
-                    date = entity.date
+                    date = entity.date,
+                    groupId = entity.groupId
                 )
             }
         }

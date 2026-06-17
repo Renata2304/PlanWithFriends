@@ -26,4 +26,7 @@ interface EventDao {
 
     @Query("SELECT * FROM events WHERE eventId = :eventId LIMIT 1")
     suspend fun getEventById(eventId: String): EventEntity?
+
+    @Query("SELECT * FROM events")
+    suspend fun getAllEventsOnce(): List<EventEntity>
 }
