@@ -93,4 +93,12 @@
     <string name="action_create_account">Creează cont nou</string>
 
     <string name="leave_group">Părăsește grupul</string>
+
+    <string name="notif_channel_name">Notificări Evenimente</string>
+    <string name="notif_title_soon">Eveniment în curând!</string>
+    <string name="notif_msg_soon">%1$s începe într-o oră!</string>
+    <string name="notif_title_tomorrow">Eveniment Mâine!</string>
+
+    <string name="notif_msg_tomorrow_group">Nu uita că în următoarele 24h vei avea %1$s împreună cu cei din grupul %2$s.</string>
+    <string name="notif_msg_tomorrow_no_group">Nu uita că în următoarele 24h vei avea %1$s.</string>
 </resources>

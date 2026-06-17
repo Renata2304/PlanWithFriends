@@ -93,4 +93,11 @@
     <string name="action_create_account">Créer un nouveau compte</string>
 
     <string name="leave_group">Quitter le groupe</string>
+
+    <string name="notif_channel_name">Notifications d\'événements</string>
+    <string name="notif_title_soon">Événement à venir !</string>
+    <string name="notif_msg_soon">%1$s commence dans une heure !</string>
+    <string name="notif_title_tomorrow">Événement demain !</string>
+    <string name="notif_msg_tomorrow_group">N\'oublie pas que dans les prochaines 24h, tu as %1$s avec le groupe %2$s.</string>
+    <string name="notif_msg_tomorrow_no_group">N\'oublie pas que dans les prochaines 24h, tu as %1$s.</string>
 </resources>

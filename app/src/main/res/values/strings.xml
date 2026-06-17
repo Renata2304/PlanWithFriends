@@ -93,4 +93,11 @@
     <string name="action_create_account">Create new account</string>
 
     <string name="leave_group">Leave group</string>
+
+    <string name="notif_channel_name">Event Notifications</string>
+    <string name="notif_title_soon">Event starting soon!</string>
+    <string name="notif_msg_soon">%1$s starts in an hour!</string>
+    <string name="notif_title_tomorrow">Event Tomorrow!</string>
+    <string name="notif_msg_tomorrow_group">Don\'t forget that you have %1$s in the next 24h with the %2$s group.</string>
+    <string name="notif_msg_tomorrow_no_group">Don\'t forget that you have %1$s in the next 24h.</string>
 </resources>
