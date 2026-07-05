@@ -101,4 +101,9 @@
 
     <string name="notif_msg_tomorrow_group">Nu uita că în următoarele 24h vei avea %1$s împreună cu cei din grupul %2$s.</string>
     <string name="notif_msg_tomorrow_no_group">Nu uita că în următoarele 24h vei avea %1$s.</string>
+
+    <string name="please_login">Te rugăm să te loghezi</string>
+    <string name="choose_profile_picture">Alege o poză de profil</string>
+    <string name="choose_from_gallery">Alege din Galerie</string>
+    <string name="or_choose_icon">Sau alege o pictogramă:</string>
 </resources>

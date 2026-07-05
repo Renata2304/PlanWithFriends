@@ -1,5 +1,7 @@
 package com.example.planwithfriends.ui.screens
 
+import android.app.Application
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -19,9 +21,18 @@ data class GroupsUiState(
     val groupsList: List<Group> = emptyList()
 )
 
-class GroupsViewModel(private val groupsRepository: GroupsRepository) : ViewModel() {
+class GroupsViewModel(
+    private val application: Application,
+    private val groupsRepository: GroupsRepository
+) : ViewModel() {
 
-    private val currentUserId = "my_user_id_123"
+    private val sharedPrefs = application.getSharedPreferences("settings_prefs", Context.MODE_PRIVATE)
+
+    private val currentUserId: String
+        get() = sharedPrefs.getString("current_user", "Guest") ?: "Guest"
+
+    private val currentUserIcon: String
+        get() = sharedPrefs.getString("pfp_$currentUserId", "icon_person") ?: "icon_person"
 
     val uiState: StateFlow<GroupsUiState> = groupsRepository.getAllGroups()
         .map { groups -> GroupsUiState(groupsList = groups) }
@@ -37,15 +48,21 @@ class GroupsViewModel(private val groupsRepository: GroupsRepository) : ViewMode
         }
     }
 
+    fun refreshDataForCurrentUser() {
+        viewModelScope.launch {
+            groupsRepository.refreshMyGroups(currentUserId)
+        }
+    }
+
     fun createGroup(name: String) {
         viewModelScope.launch {
-            groupsRepository.createGroup(name, currentUserId)
+            groupsRepository.createGroup(name, currentUserId, currentUserIcon)
         }
     }
 
     fun joinGroup(groupId: String) {
         viewModelScope.launch {
-            groupsRepository.joinGroup(groupId, currentUserId)
+            groupsRepository.joinGroup(groupId, currentUserId, currentUserIcon)
         }
     }
 
@@ -54,7 +71,7 @@ class GroupsViewModel(private val groupsRepository: GroupsRepository) : ViewMode
             initializer {
                 val application = (this[APPLICATION_KEY] as PlanWithFriendsApplication)
                 val groupsRepository = application.container.groupsRepository
-                GroupsViewModel(groupsRepository)
+                GroupsViewModel(application, groupsRepository)
             }
         }
     }

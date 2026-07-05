@@ -100,4 +100,9 @@
     <string name="notif_title_tomorrow">¡Evento mañana!</string>
     <string name="notif_msg_tomorrow_group">No olvides que en las próximas 24h tienes %1$s con el grupo %2$s.</string>
     <string name="notif_msg_tomorrow_no_group">No olvides que en las próximas 24h tienes %1$s.</string>
+
+    <string name="please_login">Por favor inicia sesión</string>
+    <string name="choose_profile_picture">Elige una foto de perfil</string>
+    <string name="choose_from_gallery">Elegir de la galería</string>
+    <string name="or_choose_icon">O elige un icono:</string>
 </resources>

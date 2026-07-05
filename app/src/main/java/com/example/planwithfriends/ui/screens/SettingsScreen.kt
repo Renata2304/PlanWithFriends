@@ -2,30 +2,79 @@
 
 package com.example.planwithfriends.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions // IMPORT NOU
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization // IMPORT NOU
+import androidx.compose.ui.text.input.KeyboardType // IMPORT NOU
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.planwithfriends.R
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
     var expandedLanguage by remember { mutableStateOf(false) }
     var expandedTheme by remember { mutableStateOf(false) }
     var showLoginDialog by remember { mutableStateOf(false) }
+    var showAvatarDialog by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val currentUsername = settingsViewModel.currentUser
+    val isLoggedIn = currentUsername != null
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { selectedUri ->
+            selectedUri?.let { uri ->
+                try {
+                    if (currentUsername != null) {
+                        val inputStream = context.contentResolver.openInputStream(uri)
+
+                        val file = File(context.filesDir, "avatar_$currentUsername.jpg")
+
+                        inputStream?.use { input ->
+                            FileOutputStream(file).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+
+                        settingsViewModel.updateProfilePicture(Uri.fromFile(file).toString())
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                showAvatarDialog = false
+            }
+        }
+    )
 
     val languages = stringArrayResource(R.array.languages_list)
     val selectedLanguage = settingsViewModel.currentLanguage ?: languages[0]
@@ -43,9 +92,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
     val selectedThemeDisplayText = themeMap[settingsViewModel.currentSeasonTheme] ?: themeMap["auto"]!!
 
-    // Starea curenta a utilizatorului
-    val currentUsername = settingsViewModel.currentUser
-    val isLoggedIn = currentUsername != null
 
     Column(
         modifier = modifier
@@ -54,19 +100,48 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. Poza de Profil
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = stringResource(R.string.profile_picture_cd),
+        Box(
             modifier = Modifier
                 .size(120.dp)
-                .clip(CircleShape),
-            tint = if (settingsViewModel.isDarkTheme) Color.LightGray else Color.Gray
-        )
+                .clip(CircleShape)
+                .background(if (settingsViewModel.isDarkTheme) Color.DarkGray else Color.LightGray)
+                .clickable(enabled = isLoggedIn) { showAvatarDialog = true },
+            contentAlignment = Alignment.Center
+        ) {
+            val pfpUri = settingsViewModel.profilePictureUri
+
+            if (pfpUri != null && pfpUri.startsWith("icon_")) {
+                val icon = when (pfpUri) {
+                    "icon_face" -> Icons.Default.Face
+                    "icon_favorite" -> Icons.Default.Favorite
+                    "icon_home" -> Icons.Default.Home
+                    else -> Icons.Default.Person
+                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "Avatar",
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            } else if (pfpUri != null) {
+                AsyncImage(
+                    model = pfpUri,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Default Profile",
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color.Gray
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Numele utilizatorului daca e logat
         if (isLoggedIn) {
             Text(
                 text = stringResource(R.string.logged_in_as, currentUsername!!),
@@ -74,11 +149,16 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
+        } else {
+            Text(
+                text = stringResource(R.string.please_login),
+                style = MaterialTheme.typography.titleSmall,
+                color = Color.Gray
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. Setare Limba
         ExposedDropdownMenuBox(
             expanded = expandedLanguage,
             onExpandedChange = { expandedLanguage = !expandedLanguage }
@@ -115,7 +195,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Setare Tema
         ExposedDropdownMenuBox(
             expanded = expandedTheme,
             onExpandedChange = { expandedTheme = !expandedTheme }
@@ -150,32 +229,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 4. Mod Intunecat
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.dark_theme_label),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = textColor
-            )
-            Switch(
-                checked = settingsViewModel.isDarkTheme,
-                onCheckedChange = { isDark ->
-                    settingsViewModel.toggleTheme(isDark)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.secondary,
-                    checkedTrackColor = MaterialTheme.colorScheme.tertiary
-                )
-            )
-        }
-
         Spacer(modifier = Modifier.weight(1f))
 
         if (isLoggedIn) {
@@ -203,6 +256,47 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             AuthDialog(
                 viewModel = settingsViewModel,
                 onDismiss = { showLoginDialog = false }
+            )
+        }
+
+        if (showAvatarDialog) {
+            AlertDialog(
+                onDismissRequest = { showAvatarDialog = false },
+                title = { Text(stringResource(R.string.choose_profile_picture)) },
+                text = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Button(
+                            onClick = { photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.choose_from_gallery))
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(stringResource(R.string.or_choose_icon), style = MaterialTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+                            IconButton(onClick = { settingsViewModel.updateProfilePicture("icon_face"); showAvatarDialog = false }) {
+                                Icon(Icons.Default.Face, contentDescription = "Face", modifier = Modifier.size(40.dp))
+                            }
+                            IconButton(onClick = { settingsViewModel.updateProfilePicture("icon_person"); showAvatarDialog = false }) {
+                                Icon(Icons.Default.Person, contentDescription = "Person", modifier = Modifier.size(40.dp))
+                            }
+                            IconButton(onClick = { settingsViewModel.updateProfilePicture("icon_favorite"); showAvatarDialog = false }) {
+                                Icon(Icons.Default.Favorite, contentDescription = "Favorite", modifier = Modifier.size(40.dp))
+                            }
+                            IconButton(onClick = { settingsViewModel.updateProfilePicture("icon_home"); showAvatarDialog = false }) {
+                                Icon(Icons.Default.Home, contentDescription = "Home", modifier = Modifier.size(40.dp))
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showAvatarDialog = false }) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                }
             )
         }
     }
@@ -238,7 +332,11 @@ fun AuthDialog(
                     onValueChange = { username = it.trim() },
                     label = { Text(stringResource(R.string.username_label)) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        keyboardType = KeyboardType.Text
+                    )
                 )
 
                 OutlinedTextField(
@@ -247,7 +345,11 @@ fun AuthDialog(
                     label = { Text(stringResource(R.string.password_label)) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        keyboardType = KeyboardType.Password
+                    )
                 )
 
                 if (viewModel.isAuthLoading) {

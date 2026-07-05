@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.planwithfriends.ui.screens
 
 import androidx.compose.foundation.background
@@ -10,15 +12,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.planwithfriends.data.Group
 import com.example.planwithfriends.R
 
@@ -26,6 +36,7 @@ import com.example.planwithfriends.R
 fun GroupsScreen(
     modifier: Modifier = Modifier,
     viewModel: GroupsViewModel = viewModel(factory = GroupsViewModel.Factory),
+    settingsViewModel: SettingsViewModel,
     onGroupClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -34,9 +45,39 @@ fun GroupsScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var showJoinDialog by remember { mutableStateOf(false) }
 
+    val currentUsername = settingsViewModel.currentUser ?: "Guest"
+    val pfpUri = settingsViewModel.profilePictureUri
+
+    LaunchedEffect(key1 = currentUsername) {
+        viewModel.refreshDataForCurrentUser()
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Salut, $currentUsername!",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                actions = {
+                    ProfileAvatar(
+                        pfpUri = pfpUri,
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .size(40.dp),
+                        iconSize = 24.dp
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
         floatingActionButton = {
             Box {
                 FloatingActionButton(
@@ -77,7 +118,7 @@ fun GroupsScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(uiState.groupsList) { group ->
@@ -135,14 +176,15 @@ fun GroupListItem(group: Group, onClick: () -> Unit) {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Row(horizontalArrangement = Arrangement.spacedBy((-8).dp)) {
-                    repeat(minOf(group.memberCount, 3)) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = stringResource(R.string.avatar_cd),
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(Color.White, CircleShape),
-                            tint = Color.Gray
+                    val displayCount = minOf(group.memberCount, 3)
+
+                    for (i in 0 until displayCount) {
+                        val iconUri = group.memberIcons.getOrNull(i)
+
+                        ProfileAvatar(
+                            pfpUri = iconUri,
+                            modifier = Modifier.size(32.dp),
+                            iconSize = 20.dp
                         )
                     }
                 }
@@ -157,6 +199,49 @@ fun GroupListItem(group: Group, onClick: () -> Unit) {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ProfileAvatar(
+    pfpUri: String?,
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 24.dp
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Color.LightGray),
+        contentAlignment = Alignment.Center
+    ) {
+        if (pfpUri != null && pfpUri.startsWith("icon_")) {
+            val icon = when (pfpUri) {
+                "icon_face" -> Icons.Default.Face
+                "icon_favorite" -> Icons.Default.Favorite
+                "icon_home" -> Icons.Default.Home
+                else -> Icons.Default.Person
+            }
+            Icon(
+                imageVector = icon,
+                contentDescription = "Avatar",
+                modifier = Modifier.size(iconSize),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else if (pfpUri != null) {
+            AsyncImage(
+                model = pfpUri,
+                contentDescription = "Profile Picture",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Default Profile",
+                modifier = Modifier.fillMaxSize(),
+                tint = Color.Gray
+            )
         }
     }
 }

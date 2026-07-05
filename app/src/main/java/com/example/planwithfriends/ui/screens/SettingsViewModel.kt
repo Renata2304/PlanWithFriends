@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.core.content.edit
 import com.example.planwithfriends.PlanWithFriendsApplication
-import com.example.planwithfriends.R // Asigură-te că acest import există!
+import com.example.planwithfriends.R
 import com.example.planwithfriends.data.GroupsRepository
 import com.example.planwithfriends.data.network.NetworkUser
 import com.example.planwithfriends.data.network.RetrofitClient
@@ -38,19 +38,44 @@ class SettingsViewModel(
     var currentUser by mutableStateOf(sharedPreferences.getString("current_user", null))
         private set
 
+    var profilePictureUri by mutableStateOf<String?>(null)
+        private set
+
     var authErrorMessage by mutableStateOf<String?>(null)
         private set
     var isAuthLoading by mutableStateOf(false)
         private set
 
+    init {
+        currentUser?.let { user ->
+            profilePictureUri = sharedPreferences.getString("pfp_$user", null)
+        }
+    }
+
+    fun updateProfilePicture(uri: String) {
+        currentUser?.let { user ->
+            profilePictureUri = uri
+            sharedPreferences.edit { putString("pfp_$user", uri) }
+
+            viewModelScope.launch {
+                try {
+                    groupsRepository.updateMyIconInAllGroups(userId = user, newIcon = uri)
+                } catch (e: Exception) {
+                }
+            }
+        }
+    }
+
     fun toggleTheme(isDark: Boolean) {
         isDarkTheme = isDark
-        sharedPreferences.edit {putBoolean("is_dark", isDark)}
+        sharedPreferences.edit { putBoolean("is_dark", isDark) }
     }
+
     fun setSeasonTheme(theme: String) {
         currentSeasonTheme = theme
         sharedPreferences.edit { putString("season", theme) }
     }
+
     fun setLanguage(language: String) {
         currentLanguage = language
         sharedPreferences.edit { putString("language", language) }
@@ -110,6 +135,8 @@ class SettingsViewModel(
     private fun finalizeAuth(username: String) {
         currentUser = username
         sharedPreferences.edit { putString("current_user", username) }
+        profilePictureUri = sharedPreferences.getString("pfp_$username", null)
+
         viewModelScope.launch {
             groupsRepository.mergeOfflineDataWithServer(username)
         }
@@ -119,6 +146,7 @@ class SettingsViewModel(
 
     fun logout() {
         currentUser = null
+        profilePictureUri = null
         sharedPreferences.edit { remove("current_user") }
     }
 

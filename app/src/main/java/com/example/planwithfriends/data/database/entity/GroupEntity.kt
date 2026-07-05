@@ -8,5 +8,6 @@ data class GroupEntity(
     @PrimaryKey val groupId: String,
     val groupName: String,
     val creatorId: String,
-    val memberCount: Int
+    val memberCount: Int,
+    val memberIcons: List<String>
 )

@@ -35,6 +35,7 @@ import java.time.ZoneId
 fun GroupDetailsScreen(
     groupId: String,
     groupName: String,
+    settingsViewModel: SettingsViewModel,
     onNavigateBack: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as PlanWithFriendsApplication
@@ -58,6 +59,9 @@ fun GroupDetailsScreen(
     var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     val toastMessage = stringResource(R.string.code_copied, groupId)
+
+    val currentUsername = settingsViewModel.currentUser ?: "Guest"
+    val pfpUri = settingsViewModel.profilePictureUri ?: "icon_person"
 
     Scaffold(
         topBar = {
@@ -89,10 +93,10 @@ fun GroupDetailsScreen(
                             onClick = {
                                 showMenu = false
                                 viewModel.leaveCurrentGroup(
-                                    onSuccess = {
-                                        onNavigateBack()
-                                    }
+                                    userId = currentUsername,
+                                    userIcon = pfpUri
                                 )
+                                onNavigateBack()
                             }
                         )
                     }

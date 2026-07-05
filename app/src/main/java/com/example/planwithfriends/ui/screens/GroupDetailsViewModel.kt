@@ -54,10 +54,9 @@ class GroupDetailsViewModel(
         }
     }
 
-    fun leaveCurrentGroup(onSuccess: () -> Unit) {
+    fun leaveCurrentGroup(userId: String, userIcon: String) {
         viewModelScope.launch {
-            groupsRepository.leaveGroup(groupId)
-            onSuccess()
+            groupsRepository.leaveGroup(groupId, userId, userIcon)
         }
     }
 

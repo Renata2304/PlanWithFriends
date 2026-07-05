@@ -11,6 +11,7 @@ import com.example.planwithfriends.data.database.entity.EventEntity
 import com.example.planwithfriends.data.database.entity.GroupEntity
 import com.example.planwithfriends.data.database.entity.UserEntity
 import com.example.planwithfriends.data.database.entity.UserGroupCrossRef
+import androidx.room.TypeConverters // Importul este aici
 
 @Database(
     entities = [
@@ -22,6 +23,7 @@ import com.example.planwithfriends.data.database.entity.UserGroupCrossRef
     version = 1,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun eventDao(): EventDao

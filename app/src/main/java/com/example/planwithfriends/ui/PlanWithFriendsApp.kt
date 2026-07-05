@@ -109,6 +109,7 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
 
                 composable("groups") {
                     GroupsScreen(
+                        settingsViewModel = settingsViewModel, // Pasăm ViewModel-ul mai departe
                         onGroupClick = { groupId, groupName ->
                             navController.navigate("group_details/$groupId/$groupName")
                         }
@@ -132,6 +133,7 @@ fun PlanWithFriendsApp(settingsViewModel: SettingsViewModel) {
                     GroupDetailsScreen(
                         groupId = groupId,
                         groupName = groupName,
+                        settingsViewModel = settingsViewModel,
                         onNavigateBack = {
                             navController.popBackStack()
                         }
