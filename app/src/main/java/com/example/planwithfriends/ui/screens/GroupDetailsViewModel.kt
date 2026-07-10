@@ -10,6 +10,7 @@ import com.example.planwithfriends.data.EventsRepository
 import com.example.planwithfriends.data.GroupsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map // IMPORT NOU ADAUGAT AICI
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -24,6 +25,14 @@ class GroupDetailsViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+
+    val currentGroup = groupsRepository.getAllGroups()
+        .map { groups -> groups.find { it.id == groupId } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
         )
 
     init {

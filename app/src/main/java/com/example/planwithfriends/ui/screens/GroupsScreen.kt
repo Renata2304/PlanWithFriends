@@ -133,7 +133,11 @@ fun GroupsScreen(
             CreateGroupDialog(
                 onDismiss = { showCreateDialog = false },
                 onCreate = { groupName ->
-                    viewModel.createGroup(groupName)
+                    viewModel.createGroup(
+                        name = groupName,
+                        username = currentUsername,
+                        icon = pfpUri ?: "icon_person"
+                    )
                     showCreateDialog = false
                 }
             )
@@ -143,7 +147,11 @@ fun GroupsScreen(
             JoinGroupDialog(
                 onDismiss = { showJoinDialog = false },
                 onJoin = { groupId ->
-                    viewModel.joinGroup(groupId)
+                    viewModel.joinGroup(
+                        groupId = groupId,
+                        username = currentUsername,
+                        icon = pfpUri ?: "icon_person"
+                    )
                     showJoinDialog = false
                 }
             )
@@ -205,9 +213,9 @@ fun GroupListItem(group: Group, onClick: () -> Unit) {
 
 @Composable
 fun ProfileAvatar(
-    pfpUri: String?,
-    modifier: Modifier = Modifier,
-    iconSize: Dp = 24.dp
+    pfpUri: String?, // Permitem să fie null dacă nu există poză
+    modifier: Modifier = Modifier, // Adăugăm modifier-ul pentru a seta mărimile corecte
+    iconSize: Dp = 24.dp // Mărimea iconițelor fallback
 ) {
     Box(
         modifier = modifier
@@ -228,7 +236,8 @@ fun ProfileAvatar(
                 modifier = Modifier.size(iconSize),
                 tint = MaterialTheme.colorScheme.primary
             )
-        } else if (pfpUri != null) {
+        } else if (!pfpUri.isNullOrBlank()) {
+            // Coil se ocupă automat de descărcarea și afișarea linkului
             AsyncImage(
                 model = pfpUri,
                 contentDescription = "Profile Picture",

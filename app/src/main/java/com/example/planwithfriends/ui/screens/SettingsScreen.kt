@@ -2,11 +2,14 @@
 
 package com.example.planwithfriends.ui.screens
 
-import android.content.Intent
-import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -36,8 +39,42 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.planwithfriends.R
-import java.io.File
-import java.io.FileOutputStream
+import java.io.ByteArrayOutputStream
+import kotlin.math.roundToInt
+import androidx.core.graphics.scale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+
+suspend fun uploadImageToImgBB(base64Image: String): String? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val apiKey = "5009c84ce24ceb12936ad621ba093069"
+
+            val url = URL("https://api.imgbb.com/1/upload?key=$apiKey")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+
+            val postData = "image=" + URLEncoder.encode(base64Image, "UTF-8")
+            connection.outputStream.write(postData.toByteArray())
+
+            if (connection.responseCode == 200) {
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonObject = JSONObject(response)
+                return@withContext jsonObject.getJSONObject("data").getString("url") // Returnează link-ul pozei!
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        null
+    }
+}
 
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsViewModel) {
@@ -46,7 +83,11 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
     var showLoginDialog by remember { mutableStateOf(false) }
     var showAvatarDialog by remember { mutableStateOf(false) }
 
+    var isUploading by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
     val currentUsername = settingsViewModel.currentUser
     val isLoggedIn = currentUsername != null
 
@@ -54,31 +95,52 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { selectedUri ->
             selectedUri?.let { uri ->
-                try {
-                    if (currentUsername != null) {
-                        val inputStream = context.contentResolver.openInputStream(uri)
+                coroutineScope.launch {
+                    isUploading = true
+                    try {
+                        if (currentUsername != null) {
+                            val inputStream = context.contentResolver.openInputStream(uri)
+                            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+                            inputStream?.close()
 
-                        val file = File(context.filesDir, "avatar_$currentUsername.jpg")
+                            if (originalBitmap != null) {
+                                val maxDim = 500f
+                                val scale = minOf(maxDim / originalBitmap.width.toFloat(), maxDim / originalBitmap.height.toFloat())
+                                val width = (scale * originalBitmap.width).roundToInt()
+                                val height = (scale * originalBitmap.height).roundToInt()
 
-                        inputStream?.use { input ->
-                            FileOutputStream(file).use { output ->
-                                input.copyTo(output)
+                                val scaledBitmap = originalBitmap.scale(width, height)
+
+                                val outputStream = ByteArrayOutputStream()
+                                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+                                val byteArray = outputStream.toByteArray()
+
+                                val base64String = Base64.encodeToString(byteArray, Base64.NO_WRAP)
+
+                                val imageUrl = uploadImageToImgBB(base64String)
+
+                                if (imageUrl != null) {
+                                    settingsViewModel.updateProfilePicture(imageUrl)
+                                    Toast.makeText(context, "Poză actualizată cu succes!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Eroare la încărcare!", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
-
-                        settingsViewModel.updateProfilePicture(Uri.fromFile(file).toString())
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, "A apărut o eroare.", Toast.LENGTH_SHORT).show()
+                    } finally {
+                        isUploading = false
+                        showAvatarDialog = false
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
-                showAvatarDialog = false
             }
         }
     )
 
     val languages = stringArrayResource(R.array.languages_list)
     val selectedLanguage = settingsViewModel.currentLanguage ?: languages[0]
-
     val textColor = MaterialTheme.colorScheme.onBackground
 
     val themeMap = mapOf(
@@ -89,9 +151,7 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         "winter" to stringResource(id = R.string.theme_winter)
     )
     val themeKeys = themeMap.keys.toList()
-
     val selectedThemeDisplayText = themeMap[settingsViewModel.currentSeasonTheme] ?: themeMap["auto"]!!
-
 
     Column(
         modifier = modifier
@@ -105,12 +165,14 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                 .size(120.dp)
                 .clip(CircleShape)
                 .background(if (settingsViewModel.isDarkTheme) Color.DarkGray else Color.LightGray)
-                .clickable(enabled = isLoggedIn) { showAvatarDialog = true },
+                .clickable(enabled = isLoggedIn && !isUploading) { showAvatarDialog = true },
             contentAlignment = Alignment.Center
         ) {
             val pfpUri = settingsViewModel.profilePictureUri
 
-            if (pfpUri != null && pfpUri.startsWith("icon_")) {
+            if (isUploading) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            } else if (pfpUri != null && pfpUri.startsWith("icon_")) {
                 val icon = when (pfpUri) {
                     "icon_face" -> Icons.Default.Face
                     "icon_favorite" -> Icons.Default.Favorite
@@ -123,7 +185,8 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
                     modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
-            } else if (pfpUri != null) {
+            } else if (pfpUri != null && pfpUri.startsWith("http")) {
+                // Aici va intra automat link-ul de la ImgBB
                 AsyncImage(
                     model = pfpUri,
                     contentDescription = "Profile Picture",
@@ -318,8 +381,6 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         }
     }
 }
-
-// ... Funcția AuthDialog rămâne neschimbată
 
 @Composable
 fun AuthDialog(

@@ -54,15 +54,17 @@ class GroupsViewModel(
         }
     }
 
-    fun createGroup(name: String) {
+    fun createGroup(name: String, username: String, icon: String) {
         viewModelScope.launch {
-            groupsRepository.createGroup(name, currentUserId, currentUserIcon)
+            groupsRepository.createGroup(name, username, icon)
+            refreshDataForCurrentUser()
         }
     }
 
-    fun joinGroup(groupId: String) {
+    fun joinGroup(groupId: String, username: String, icon: String) {
         viewModelScope.launch {
-            groupsRepository.joinGroup(groupId, currentUserId, currentUserIcon)
+            groupsRepository.joinGroup(groupId, username, icon)
+            refreshDataForCurrentUser()
         }
     }
 

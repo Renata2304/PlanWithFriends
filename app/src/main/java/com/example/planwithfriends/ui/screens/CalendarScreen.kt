@@ -330,7 +330,7 @@ fun CalendarWidget(
 }
 
 @Composable
-fun EventCard(title: String, time: String, onClick: () -> Unit) {
+private fun EventCard(title: String, time: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

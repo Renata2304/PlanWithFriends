@@ -30,7 +30,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                     id = entity.groupId,
                     name = entity.groupName,
                     memberCount = entity.memberCount,
-                    memberIcons = entity.memberIcons
+                    memberIcons = entity.memberIcons,
+                    members = entity.members
                 )
             }
         }
@@ -56,7 +57,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                 groupName = netGroup.name,
                 creatorId = userId,
                 memberCount = netGroup.memberCount,
-                memberIcons = netGroup.memberIcons ?: emptyList()
+                memberIcons = netGroup.memberIcons ?: emptyList(),
+                members = netGroup.members
             )
             groupDao.insertGroup(localEntity)
         }
@@ -74,7 +76,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                     groupName = netGroup.name,
                     creatorId = localGroup.creatorId,
                     memberCount = netGroup.memberCount,
-                    memberIcons = netGroup.memberIcons ?: emptyList()
+                    memberIcons = netGroup.memberIcons ?: emptyList(),
+                    members = netGroup.members
                 )
                 groupDao.insertGroup(updatedEntity)
             }
@@ -115,7 +118,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                         groupName = serverGroup.name,
                         creatorId = localGroup.creatorId,
                         memberCount = serverGroup.memberCount,
-                        memberIcons = iconsList
+                        memberIcons = iconsList,
+                        members = membersList
                     )
                     groupDao.insertGroup(updatedEntity)
                 }
@@ -141,7 +145,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
             groupName = name,
             creatorId = userId,
             memberCount = 1,
-            memberIcons = listOf(userIcon)
+            memberIcons = listOf(userIcon),
+            members = listOf(userId)
         )
         groupDao.insertGroup(localEntity)
     }
@@ -160,7 +165,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                         groupId = group.groupId,
                         name = group.groupName,
                         memberCount = group.memberCount,
-                        memberIcons = group.memberIcons
+                        memberIcons = group.memberIcons,
+                        members = group.members
                     )
                     RetrofitClient.apiService.createGroup(newNetworkGroup)
                 }
@@ -170,7 +176,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                     groupName = group.groupName,
                     creatorId = newUsername,
                     memberCount = group.memberCount,
-                    memberIcons = group.memberIcons
+                    memberIcons = group.memberIcons,
+                    members = group.members
                 )
                 groupDao.insertGroup(updatedEntity)
             }
@@ -211,7 +218,8 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
                 groupName = serverGroup.name,
                 creatorId = userId,
                 memberCount = noulNumarDeMembri,
-                memberIcons = noileIconite
+                memberIcons = noileIconite,
+                members = noiiMembri
             )
             groupDao.insertGroup(localEntity)
         }
@@ -227,17 +235,17 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
             val serverGroup = networkResult[0]
             val serverObjectId = serverGroup.id ?: return
 
-            if (serverGroup.memberCount > 1) {
-                val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
-                noiiMembri.remove(userId)
+            val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
+            noiiMembri.remove(userId)
 
-                val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
-                noileIconite.remove(userIcon)
+            val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
+            noileIconite.remove(userIcon)
 
+            if (noiiMembri.isNotEmpty()) {
                 val updatedGroup = NetworkGroup(
                     groupId = serverGroup.groupId,
                     name = serverGroup.name,
-                    memberCount = serverGroup.memberCount - 1,
+                    memberCount = noiiMembri.size,
                     memberIcons = noileIconite,
                     members = noiiMembri
                 )
