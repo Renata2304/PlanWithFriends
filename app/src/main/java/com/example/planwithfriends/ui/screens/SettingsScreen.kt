@@ -11,7 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions // IMPORT NOU
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Face
@@ -29,8 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization // IMPORT NOU
-import androidx.compose.ui.text.input.KeyboardType // IMPORT NOU
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -229,6 +229,23 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
             }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.dark_theme),
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor
+            )
+            Switch(
+                checked = settingsViewModel.isDarkTheme,
+                onCheckedChange = { isDark -> settingsViewModel.toggleTheme(isDark) }
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         if (isLoggedIn) {
@@ -301,6 +318,8 @@ fun SettingsScreen(modifier: Modifier = Modifier, settingsViewModel: SettingsVie
         }
     }
 }
+
+// ... Funcția AuthDialog rămâne neschimbată
 
 @Composable
 fun AuthDialog(
