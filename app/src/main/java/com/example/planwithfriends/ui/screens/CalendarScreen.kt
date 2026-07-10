@@ -82,7 +82,7 @@ fun CalendarScreen(
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.elevatedButtonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        contentColor = Color.Black
                     )
                 ) {
                     Icon(
