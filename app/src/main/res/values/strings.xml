@@ -105,4 +105,28 @@
     <string name="choose_profile_picture">Choose a profile picture</string>
     <string name="choose_from_gallery">Choose from Gallery</string>
     <string name="or_choose_icon">Or choose an icon:</string>
+
+    <string name="tutorial_title">Calendar User Guide</string>
+    <string name="tutorial_button_cd">Open app guide</string>
+    <string name="action_close">Close</string>
+
+    <string-array name="calendar_tutorial_steps">
+        <item>CALENDAR</item>
+        <item>1. Use the left and right arrows to change the current month.</item>
+        <item>2. Tap on the desired date in the calendar to select it (the current day is marked differently).</item>
+        <item>3. After selecting the date, tap the round \"+\" button in the bottom right to add an event on that day.</item>
+        <item>4. To edit or delete an event, simply tap on its card in the list.</item>
+        <item>\n</item>
+
+        <item>GROUPS</item>
+        <item>1. On the main groups page, you can see all the communities you are a part of.</item>
+        <item>2. Tap the \"+\" button in the bottom right to create a new group or join an existing one (using the unique code).</item>
+        <item>3. Enter a group to add and view shared plans with your friends.</item>
+        <item>\n</item>
+
+        <item>SETTINGS</item>
+        <item>1. Create an account and log in! This way, all your events and groups will be safely saved on the server.</item>
+        <item>2. Customize the app to your preferences: change the theme or choose your desired language.</item>
+        <item>3. Add a profile picture to be easily recognized by friends in groups.</item>
+    </string-array>
 </resources>

@@ -105,4 +105,28 @@
     <string name="choose_profile_picture">Elige una foto de perfil</string>
     <string name="choose_from_gallery">Elegir de la galería</string>
     <string name="or_choose_icon">O elige un icono:</string>
+
+    <string name="tutorial_title">Guía de uso del Calendario</string>
+    <string name="tutorial_button_cd">Abrir la guía de la aplicación</string>
+    <string name="action_close">Cerrar</string>
+
+    <string-array name="calendar_tutorial_steps">
+        <item>CALENDARIO</item>
+        <item>1. Usa las flechas izquierda y derecha para cambiar el mes actual.</item>
+        <item>2. Toca la fecha deseada en el calendario para seleccionarla (el día actual está marcado de manera diferente).</item>
+        <item>3. Después de seleccionar la fecha, toca el botón redondo \"+\" en la parte inferior derecha para agregar un evento en ese día.</item>
+        <item>4. Para editar o eliminar un evento, simplemente toca su tarjeta en la lista.</item>
+        <item>\n</item>
+
+        <item>GRUPOS</item>
+        <item>1. En la página principal de grupos, puedes ver todas las comunidades de las que formas parte.</item>
+        <item>2. Toca el botón \"+\" en la parte inferior derecha para crear un nuevo grupo o unirte a uno existente (usando el código único).</item>
+        <item>3. Entra en un grupo para agregar y ver los planes compartidos con tus amigos.</item>
+        <item>\n</item>
+
+        <item>AJUSTES</item>
+        <item>1. ¡Crea una cuenta e inicia sesión! De esta manera, todos tus eventos y grupos se guardarán de forma segura en el servidor.</item>
+        <item>2. Personaliza la aplicación según tus preferencias: cambia el tema o elige el idioma deseado.</item>
+        <item>3. Agrega una foto de perfil para que tus amigos te reconozcan más fácilmente en los grupos.</item>
+    </string-array>
 </resources>

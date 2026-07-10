@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info // IMPORTAT: Iconița pentru tutorial
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -17,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringArrayResource // IMPORTAT: Pentru citirea listei de instrucțiuni
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,7 +42,7 @@ fun CalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
-
+    var showTutorial by remember { mutableStateOf(false) }
     var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     Scaffold(
@@ -67,6 +68,30 @@ fun CalendarScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ElevatedButton(
+                    onClick = { showTutorial = true },
+                    shape = CircleShape,
+                    modifier = Modifier.size(42.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = stringResource(R.string.tutorial_button_cd)
+                    )
+                }
+            }
+
             // 1. Componenta Calendarului
             CalendarWidget(
                 currentDate = currentDate,
@@ -116,6 +141,41 @@ fun CalendarScreen(
                         )
                     }
                 }
+            }
+
+            if (showTutorial) {
+                AlertDialog(
+                    onDismissRequest = { showTutorial = false },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.tutorial_title),
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    text = {
+                        val tutorialSteps = stringArrayResource(R.array.calendar_tutorial_steps)
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 250.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(tutorialSteps) { step ->
+                                Text(
+                                    text = step,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showTutorial = false }) {
+                            Text(text = stringResource(R.string.action_close))
+                        }
+                    }
+                )
             }
 
             if (showAddDialog) {

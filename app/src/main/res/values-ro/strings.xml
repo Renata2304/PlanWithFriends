@@ -106,4 +106,28 @@
     <string name="choose_profile_picture">Alege o poză de profil</string>
     <string name="choose_from_gallery">Alege din Galerie</string>
     <string name="or_choose_icon">Sau alege o pictogramă:</string>
+
+    <string name="tutorial_title">Ghid de utilizare Calendar</string>
+    <string name="tutorial_button_cd">Deschide ghidul aplicației</string>
+    <string name="action_close">Închide</string>
+
+    <string-array name="calendar_tutorial_steps">
+        <item>CALENDAR</item>
+        <item>1. Folosește săgețile din stânga și dreapta pentru a schimba luna curentă.</item>
+        <item>2. Apasă pe data dorită din calendar pentru a o selecta (ziua curentă este marcată diferit).</item>
+        <item>3. După ce ai selectat data, apasă pe butonul rotund „+” din dreapta jos pentru a adăuga un eveniment în acea zi.</item>
+        <item>4. Pentru a edita sau șterge un eveniment, apasă pur și simplu pe cardul acestuia din listă.</item>
+        <item>\n</item> <!-- Spațiu liber între secțiuni -->
+
+        <item>GRUPURI</item>
+        <item>1. Pe pagina principală de grupuri poți vedea toate comunitățile din care faci parte.</item>
+        <item>2. Apasă pe butonul „+” din dreapta jos pentru a crea un grup nou sau pentru a te alătura unuia deja existent (folosind codul unic).</item>
+        <item>3. Intră într-un grup pentru a adăuga și a vedea planurile comune cu prietenii tăi.</item>
+        <item>\n</item>
+
+        <item>SETĂRI</item>
+        <item>1. Creează-ți un cont și conectează-te! Astfel, toate evenimentele și grupurile tale vor fi salvate în siguranță pe server.</item>
+        <item>2. Personalizează aplicația după preferințele tale: schimbă tema sau alege limba dorită.</item>
+        <item>3. Adaugă o poză de profil pentru a fi recunoscut mai ușor de prieteni în grupuri.</item>
+    </string-array>
 </resources>
