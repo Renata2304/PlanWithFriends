@@ -1,11 +1,13 @@
 package com.example.planwithfriends.ui.screens
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +16,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -22,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -68,6 +71,10 @@ fun GroupDetailsScreen(
     var showMenu by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     var eventToEdit by remember { mutableStateOf<Event?>(null) }
+
+    // Stările pentru meniurile Dropdown (Acordeon)
+    var expandedUpcoming by remember { mutableStateOf(true) }  // Deschis default
+    var expandedPast by remember { mutableStateOf(false) }     // Închis default
 
     val toastMessage = stringResource(R.string.code_copied, groupId)
 
@@ -132,7 +139,6 @@ fun GroupDetailsScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-
             val members = group?.members?.filter { it.isNotBlank() && it != "null" } ?: emptyList()
             val memberIcons = group?.memberIcons?.filter { it.isNotBlank() && it != "null" } ?: emptyList()
 
@@ -166,6 +172,16 @@ fun GroupDetailsScreen(
                 }
             }
 
+            // Împărțim evenimentele în "Trecute" și "Viitoare"
+            val today = LocalDate.now()
+            val (pastEvents, upcomingEvents) = events.partition { event ->
+                try {
+                    LocalDate.parse(event.date).isBefore(today)
+                } catch (e: Exception) {
+                    false
+                }
+            }
+
             if (events.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -179,13 +195,44 @@ fun GroupDetailsScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(events.size) { index ->
-                        val event = events[index]
-                        GroupEventCard(
-                            title = event.title,
-                            time = stringResource(R.string.date_at_time, event.date, event.time),
-                            onClick = { eventToEdit = event }
+                    // SECTIUNEA 1: Evenimente Viitoare
+                    item {
+                        EventSectionHeader(
+                            title = stringResource(R.string.upcoming_events),
+                            count = upcomingEvents.size,
+                            isExpanded = expandedUpcoming,
+                            onToggle = { expandedUpcoming = !expandedUpcoming }
                         )
+                    }
+                    if (expandedUpcoming) {
+                        items(upcomingEvents) { event ->
+                            GroupEventCard(
+                                title = event.title,
+                                time = stringResource(R.string.date_at_time, event.date, event.time),
+                                onClick = { eventToEdit = event }
+                            )
+                        }
+                    }
+
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                    // SECTIUNEA 2: Evenimente Trecute
+                    item {
+                        EventSectionHeader(
+                            title = stringResource(R.string.past_events),
+                            count = pastEvents.size,
+                            isExpanded = expandedPast,
+                            onToggle = { expandedPast = !expandedPast }
+                        )
+                    }
+                    if (expandedPast) {
+                        items(pastEvents) { event ->
+                            GroupEventCard(
+                                title = event.title,
+                                time = stringResource(R.string.date_at_time, event.date, event.time),
+                                onClick = { eventToEdit = event }
+                            )
+                        }
                     }
                 }
             }
@@ -218,6 +265,32 @@ fun GroupDetailsScreen(
                 )
             }
         }
+    }
+}
+
+// Compozabil nou pentru antetul sectiunilor (titlul si sageata care se roteste)
+@Composable
+fun EventSectionHeader(title: String, count: Int, isExpanded: Boolean, onToggle: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onToggle() }
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$title ($count)",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Icon(
+            imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+            contentDescription = if (isExpanded) "Restrânge" else "Extinde",
+            tint = MaterialTheme.colorScheme.primary
+        )
     }
 }
 

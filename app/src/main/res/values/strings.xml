@@ -129,4 +129,7 @@
         <item>2. Customize the app to your preferences: change the theme or choose your desired language.</item>
         <item>3. Add a profile picture to be easily recognized by friends in groups.</item>
     </string-array>
+
+    <string name="upcoming_events">Upcoming events</string>
+    <string name="past_events">Past events</string>
 </resources>

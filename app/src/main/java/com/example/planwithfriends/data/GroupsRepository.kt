@@ -45,83 +45,98 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
     }
 
     override suspend fun refreshMyGroups(userId: String) {
-        val oldGroups = groupDao.getAllGroupsOnce()
-        oldGroups.forEach { groupDao.deleteGroupById(it.groupId) }
+        try {
+            val queryStr = "{\"members\":\"$userId\"}"
+            val myGroupsOnServer = RetrofitClient.apiService.getGroupByCode(queryStr)
 
-        val queryStr = "{\"members\":\"$userId\"}"
-        val myGroupsOnServer = RetrofitClient.apiService.getGroupByCode(queryStr)
+            val oldGroups = groupDao.getAllGroupsOnce()
+            oldGroups.forEach { groupDao.deleteGroupById(it.groupId) }
 
-        myGroupsOnServer.forEach { netGroup ->
-            val localEntity = GroupEntity(
-                groupId = netGroup.groupId,
-                groupName = netGroup.name,
-                creatorId = userId,
-                memberCount = netGroup.memberCount,
-                memberIcons = netGroup.memberIcons ?: emptyList(),
-                members = netGroup.members
-            )
-            groupDao.insertGroup(localEntity)
+            myGroupsOnServer.forEach { netGroup ->
+                val localEntity = GroupEntity(
+                    groupId = netGroup.groupId,
+                    groupName = netGroup.name,
+                    creatorId = userId,
+                    memberCount = netGroup.memberCount,
+                    memberIcons = netGroup.memberIcons ?: emptyList(),
+                    members = netGroup.members
+                )
+                groupDao.insertGroup(localEntity)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     override suspend fun syncGroups() {
         val localGroups = groupDao.getAllGroupsOnce()
         localGroups.forEach { localGroup ->
-            val queryStr = "{\"groupId\":\"${localGroup.groupId}\"}"
-            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
-            if (networkResult.isNotEmpty()) {
-                val netGroup = networkResult[0]
-                val updatedEntity = GroupEntity(
-                    groupId = netGroup.groupId,
-                    groupName = netGroup.name,
-                    creatorId = localGroup.creatorId,
-                    memberCount = netGroup.memberCount,
-                    memberIcons = netGroup.memberIcons ?: emptyList(),
-                    members = netGroup.members
-                )
-                groupDao.insertGroup(updatedEntity)
+            try {
+                val queryStr = "{\"groupId\":\"${localGroup.groupId}\"}"
+                val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
+                if (networkResult.isNotEmpty()) {
+                    val netGroup = networkResult[0]
+                    val updatedEntity = GroupEntity(
+                        groupId = netGroup.groupId,
+                        groupName = netGroup.name,
+                        creatorId = localGroup.creatorId,
+                        memberCount = netGroup.memberCount,
+                        memberIcons = netGroup.memberIcons ?: emptyList(),
+                        members = netGroup.members
+                    )
+                    groupDao.insertGroup(updatedEntity)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
 
     override suspend fun updateMyIconInAllGroups(userId: String, newIcon: String) {
+        // 1. ACTUALIZĂM LOCAL INSTANT
         val myLocalGroups = groupDao.getAllGroupsOnce()
 
+        val groupsToUpdateOnServer = mutableListOf<GroupEntity>()
+
         myLocalGroups.forEach { localGroup ->
-            val queryStr = "{\"groupId\":\"${localGroup.groupId}\"}"
-            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
+            val membersList = localGroup.members
+            val iconsList = localGroup.memberIcons.toMutableList()
+            val userIndex = membersList.indexOf(userId)
 
-            if (networkResult.isNotEmpty()) {
-                val serverGroup = networkResult[0]
-                val serverObjectId = serverGroup.id ?: return@forEach
+            if (userIndex != -1 && userIndex < iconsList.size) {
+                iconsList[userIndex] = newIcon
 
-                val membersList = serverGroup.members ?: emptyList()
-                val iconsList = (serverGroup.memberIcons ?: emptyList()).toMutableList()
+                val updatedGroup = localGroup.copy(memberIcons = iconsList)
 
-                val userIndex = membersList.indexOf(userId)
+                groupDao.deleteGroupById(updatedGroup.groupId)
+                groupDao.insertGroup(updatedGroup)
 
-                if (userIndex != -1 && userIndex < iconsList.size) {
-                    iconsList[userIndex] = newIcon
+                groupsToUpdateOnServer.add(updatedGroup)
+            }
+        }
 
-                    val updatedNetworkGroup = NetworkGroup(
-                        groupId = serverGroup.groupId,
-                        name = serverGroup.name,
-                        memberCount = serverGroup.memberCount,
-                        memberIcons = iconsList,
-                        members = membersList
-                    )
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            groupsToUpdateOnServer.forEach { localGroup ->
+                try {
+                    val queryStr = "{\"groupId\":\"${localGroup.groupId}\"}"
+                    val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
 
-                    RetrofitClient.apiService.updateGroup(serverObjectId, updatedNetworkGroup)
+                    if (networkResult.isNotEmpty()) {
+                        val serverGroup = networkResult[0]
+                        val serverObjectId = serverGroup.id ?: return@forEach
 
-                    val updatedEntity = GroupEntity(
-                        groupId = serverGroup.groupId,
-                        groupName = serverGroup.name,
-                        creatorId = localGroup.creatorId,
-                        memberCount = serverGroup.memberCount,
-                        memberIcons = iconsList,
-                        members = membersList
-                    )
-                    groupDao.insertGroup(updatedEntity)
+                        val updatedNetworkGroup = NetworkGroup(
+                            groupId = serverGroup.groupId,
+                            name = serverGroup.name,
+                            memberCount = serverGroup.memberCount,
+                            memberIcons = localGroup.memberIcons,
+                            members = serverGroup.members
+                        )
+
+                        RetrofitClient.apiService.updateGroup(serverObjectId, updatedNetworkGroup)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
@@ -129,26 +144,29 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
 
     override suspend fun createGroup(name: String, userId: String, userIcon: String) {
         val shortGroupId = generateShortCode()
+        try {
+            val newNetworkGroup = NetworkGroup(
+                groupId = shortGroupId,
+                name = name,
+                memberCount = 1,
+                memberIcons = listOf(userIcon),
+                members = listOf(userId)
+            )
 
-        val newNetworkGroup = NetworkGroup(
-            groupId = shortGroupId,
-            name = name,
-            memberCount = 1,
-            memberIcons = listOf(userIcon),
-            members = listOf(userId)
-        )
+            RetrofitClient.apiService.createGroup(newNetworkGroup)
 
-        RetrofitClient.apiService.createGroup(newNetworkGroup)
-
-        val localEntity = GroupEntity(
-            groupId = shortGroupId,
-            groupName = name,
-            creatorId = userId,
-            memberCount = 1,
-            memberIcons = listOf(userIcon),
-            members = listOf(userId)
-        )
-        groupDao.insertGroup(localEntity)
+            val localEntity = GroupEntity(
+                groupId = shortGroupId,
+                groupName = name,
+                creatorId = userId,
+                memberCount = 1,
+                memberIcons = listOf(userIcon),
+                members = listOf(userId)
+            )
+            groupDao.insertGroup(localEntity)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override suspend fun mergeOfflineDataWithServer(newUsername: String) {
@@ -156,103 +174,113 @@ class OfflineFirstGroupsRepository(private val groupDao: GroupDao) : GroupsRepos
 
         localGroups.forEach { group ->
             if (group.creatorId == "my_user_id_123" || group.creatorId == "offline_user") {
+                try {
+                    val queryStr = "{\"groupId\":\"${group.groupId}\"}"
+                    val existing = RetrofitClient.apiService.getGroupByCode(queryStr)
 
-                val queryStr = "{\"groupId\":\"${group.groupId}\"}"
-                val existing = RetrofitClient.apiService.getGroupByCode(queryStr)
+                    if (existing.isEmpty()) {
+                        val newNetworkGroup = NetworkGroup(
+                            groupId = group.groupId,
+                            name = group.groupName,
+                            memberCount = group.memberCount,
+                            memberIcons = group.memberIcons,
+                            members = group.members
+                        )
+                        RetrofitClient.apiService.createGroup(newNetworkGroup)
+                    }
 
-                if (existing.isEmpty()) {
-                    val newNetworkGroup = NetworkGroup(
+                    val updatedEntity = GroupEntity(
                         groupId = group.groupId,
-                        name = group.groupName,
+                        groupName = group.groupName,
+                        creatorId = newUsername,
                         memberCount = group.memberCount,
                         memberIcons = group.memberIcons,
                         members = group.members
                     )
-                    RetrofitClient.apiService.createGroup(newNetworkGroup)
+                    groupDao.insertGroup(updatedEntity)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-
-                val updatedEntity = GroupEntity(
-                    groupId = group.groupId,
-                    groupName = group.groupName,
-                    creatorId = newUsername,
-                    memberCount = group.memberCount,
-                    memberIcons = group.memberIcons,
-                    members = group.members
-                )
-                groupDao.insertGroup(updatedEntity)
             }
         }
-
         syncGroups()
     }
 
     override suspend fun joinGroup(groupId: String, userId: String, userIcon: String) {
-        val queryStr = "{\"groupId\":\"$groupId\"}"
-        val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
+        try {
+            val queryStr = "{\"groupId\":\"$groupId\"}"
+            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
 
-        if (networkResult.isNotEmpty()) {
-            val serverGroup = networkResult[0]
-            val serverObjectId = serverGroup.id ?: return
+            if (networkResult.isNotEmpty()) {
+                val serverGroup = networkResult[0]
+                val serverObjectId = serverGroup.id ?: return
 
-            val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
+                val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
 
-            if (noiiMembri.contains(userId)) return
+                if (noiiMembri.contains(userId)) return
 
-            noiiMembri.add(userId)
-            val noulNumarDeMembri = serverGroup.memberCount + 1
+                noiiMembri.add(userId)
+                val noulNumarDeMembri = serverGroup.memberCount + 1
 
-            val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
-            noileIconite.add(userIcon)
+                val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
+                noileIconite.add(userIcon)
 
-            val updatedNetworkGroup = NetworkGroup(
-                groupId = serverGroup.groupId,
-                name = serverGroup.name,
-                memberCount = noulNumarDeMembri,
-                memberIcons = noileIconite,
-                members = noiiMembri
-            )
-            RetrofitClient.apiService.updateGroup(serverObjectId, updatedNetworkGroup)
+                val updatedNetworkGroup = NetworkGroup(
+                    groupId = serverGroup.groupId,
+                    name = serverGroup.name,
+                    memberCount = noulNumarDeMembri,
+                    memberIcons = noileIconite,
+                    members = noiiMembri
+                )
+                RetrofitClient.apiService.updateGroup(serverObjectId, updatedNetworkGroup)
 
-            val localEntity = GroupEntity(
-                groupId = serverGroup.groupId,
-                groupName = serverGroup.name,
-                creatorId = userId,
-                memberCount = noulNumarDeMembri,
-                memberIcons = noileIconite,
-                members = noiiMembri
-            )
-            groupDao.insertGroup(localEntity)
+                val localEntity = GroupEntity(
+                    groupId = serverGroup.groupId,
+                    groupName = serverGroup.name,
+                    creatorId = userId,
+                    memberCount = noulNumarDeMembri,
+                    memberIcons = noileIconite,
+                    members = noiiMembri
+                )
+                groupDao.insertGroup(localEntity)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     override suspend fun leaveGroup(groupId: String, userId: String, userIcon: String) {
-        groupDao.deleteGroupById(groupId)
+        groupDao.deleteGroupById(groupId) // Ștergem local instant
 
-        val queryStr = "{\"groupId\":\"$groupId\"}"
-        val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
+        try {
+            val queryStr = "{\"groupId\":\"$groupId\"}"
+            val networkResult = RetrofitClient.apiService.getGroupByCode(queryStr)
 
-        if (networkResult.isNotEmpty()) {
-            val serverGroup = networkResult[0]
-            val serverObjectId = serverGroup.id ?: return
+            if (networkResult.isNotEmpty()) {
+                val serverGroup = networkResult[0]
+                val serverObjectId = serverGroup.id ?: return
 
-            val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
-            noiiMembri.remove(userId)
+                val noiiMembri = (serverGroup.members ?: emptyList()).toMutableList()
+                noiiMembri.remove(userId)
 
-            val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
-            noileIconite.remove(userIcon)
+                val noileIconite = (serverGroup.memberIcons ?: emptyList()).toMutableList()
+                noileIconite.remove(userIcon)
 
-            if (noiiMembri.isNotEmpty()) {
-                val updatedGroup = NetworkGroup(
-                    groupId = serverGroup.groupId,
-                    name = serverGroup.name,
-                    memberCount = noiiMembri.size,
-                    memberIcons = noileIconite,
-                    members = noiiMembri
-                )
-                RetrofitClient.apiService.updateGroup(serverObjectId, updatedGroup)
-            } else {
-                RetrofitClient.apiService.deleteGroup(serverObjectId)
+                if (noiiMembri.isNotEmpty()) {
+                    val updatedGroup = NetworkGroup(
+                        groupId = serverGroup.groupId,
+                        name = serverGroup.name,
+                        memberCount = noiiMembri.size,
+                        memberIcons = noileIconite,
+                        members = noiiMembri
+                    )
+                    RetrofitClient.apiService.updateGroup(serverObjectId, updatedGroup)
+                } else {
+                    RetrofitClient.apiService.deleteGroup(serverObjectId)
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

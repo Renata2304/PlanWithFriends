@@ -52,15 +52,22 @@ class SettingsViewModel(
         }
     }
 
+    private var updateJob: kotlinx.coroutines.Job? = null
+
     fun updateProfilePicture(uri: String) {
         currentUser?.let { user ->
             profilePictureUri = uri
             sharedPreferences.edit { putString("pfp_$user", uri) }
 
-            viewModelScope.launch {
+            updateJob?.cancel()
+
+            updateJob = viewModelScope.launch {
                 try {
                     groupsRepository.updateMyIconInAllGroups(userId = user, newIcon = uri)
                 } catch (e: Exception) {
+                    if (e !is kotlinx.coroutines.CancellationException) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }

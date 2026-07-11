@@ -6,9 +6,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "https://planwithfriends-6e19.restdb.io/rest/"
-    private const val API_KEY = "32e676d3b8db54dbece04f52487d4e7b90817"
-
+//    private const val BASE_URL = "https://planwithfriends-6e19.restdb.io/rest/"
+//    private const val API_KEY = "32e676d3b8db54dbece04f52487d4e7b90817"
+    private const val BASE_URL = "https://testfornow-b1ba.restdb.io/rest/"
+    private const val API_KEY = "ab3ccde1c7df73b8165ceb76b1b87ca2bdc2a"
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)

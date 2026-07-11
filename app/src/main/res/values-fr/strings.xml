@@ -129,4 +129,7 @@
         <item>2. Personnalisez l\'application selon vos préférences : changez le thème ou choisissez la langue souhaitée.</item>
         <item>3. Ajoutez une photo de profil pour être facilement reconnu par vos amis dans les groupes.</item>
     </string-array>
+
+    <string name="upcoming_events">Événements à venir</string>
+    <string name="past_events">Événements passés</string>
 </resources>

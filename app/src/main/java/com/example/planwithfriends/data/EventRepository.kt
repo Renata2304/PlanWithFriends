@@ -1,11 +1,14 @@
 package com.example.planwithfriends.data
 
+import android.util.Log
 import com.example.planwithfriends.data.database.dao.EventDao
 import com.example.planwithfriends.data.database.entity.EventEntity
 import com.example.planwithfriends.data.network.NetworkGroupEvent
 import com.example.planwithfriends.data.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import retrofit2.HttpException
+import java.io.IOException
 import java.util.UUID
 
 interface EventsRepository {
@@ -73,7 +76,11 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
                 date = existingEvent.date
             )
 
-            RetrofitClient.apiService.updateEvent(eventId, updatedNetworkEvent)
+            try {
+                RetrofitClient.apiService.updateEvent(eventId, updatedNetworkEvent)
+            } catch (e: Exception) {
+                Log.e("EventsRepository", "Error updating event in network: ${e.message}")
+            }
         }
     }
 
@@ -83,24 +90,32 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
         eventDao.deleteEvent(eventId)
 
         if (existingEvent != null && existingEvent.groupId != null) {
-            RetrofitClient.apiService.deleteEvent(eventId)
+            try {
+                RetrofitClient.apiService.deleteEvent(eventId)
+            } catch (e: Exception) {
+                Log.e("EventsRepository", "Error deleting event in network: ${e.message}")
+            }
         }
     }
 
     override suspend fun syncEventsForGroup(groupId: String) {
         val queryStr = "{\"groupId\":\"$groupId\"}"
-        val networkEvents = RetrofitClient.apiService.getEventsForGroup(queryStr)
+        try {
+            val networkEvents = RetrofitClient.apiService.getEventsForGroup(queryStr)
 
-        networkEvents.forEach { netEvent ->
-            val localEntity = EventEntity(
-                eventId = netEvent.id ?: UUID.randomUUID().toString(),
-                title = netEvent.title,
-                time = netEvent.time,
-                date = netEvent.date,
-                creatorId = "synced_user",
-                groupId = netEvent.groupId
-            )
-            eventDao.insertEvent(localEntity)
+            networkEvents.forEach { netEvent ->
+                val localEntity = EventEntity(
+                    eventId = netEvent.id ?: UUID.randomUUID().toString(),
+                    title = netEvent.title,
+                    time = netEvent.time,
+                    date = netEvent.date,
+                    creatorId = "synced_user",
+                    groupId = netEvent.groupId
+                )
+                eventDao.insertEvent(localEntity)
+            }
+        } catch (e: Exception) {
+            Log.e("EventsRepository", "Error syncing events for group $groupId: ${e.message}")
         }
     }
 
@@ -112,9 +127,12 @@ class OfflineFirstEventsRepository(private val eventDao: EventDao) : EventsRepos
             date = date
         )
 
-        RetrofitClient.apiService.createGroupEvent(newNetworkEvent)
-
-        syncEventsForGroup(groupId)
+        try {
+            RetrofitClient.apiService.createGroupEvent(newNetworkEvent)
+            syncEventsForGroup(groupId)
+        } catch (e: Exception) {
+            Log.e("EventsRepository", "Error adding event to network group: ${e.message}")
+        }
     }
 
     override fun getEventsForGroup(groupId: String): Flow<List<Event>> {

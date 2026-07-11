@@ -130,4 +130,7 @@
         <item>2. Personalizează aplicația după preferințele tale: schimbă tema sau alege limba dorită.</item>
         <item>3. Adaugă o poză de profil pentru a fi recunoscut mai ușor de prieteni în grupuri.</item>
     </string-array>
+
+    <string name="upcoming_events">Evenimente viitoare</string>
+    <string name="past_events">Evenimente trecute</string>
 </resources>
